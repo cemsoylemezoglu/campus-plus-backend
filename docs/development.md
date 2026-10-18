@@ -6,10 +6,11 @@
 2. Mevcut kayıtları koruyan parola sütunu migration'ı ve şema doğrulaması.
 3. BCrypt ile register endpoint'i ve güvenlik filtreleri üzerinden testler.
 4. Login, 15 dakikalık JWT access token ve stateless Bearer authentication.
+5. STUDENT/CLUB_ADMIN/ADMIN rolleri, güncel DB yetkileri ve profil sahipliği kontrolleri.
 
-Kaynak sahipliği ve üretim rol modeli henüz geliştirilmedi. JWT authentication tamamlandı;
-mevcut CRUD erişimi kimliği doğrulanmış kullanıcılara açıktır. Kullanıcıya özel erişim
-ve admin kuralları sonraki yetkilendirme aşamasındadır.
+Profil okuma/güncelleme kullanıcıya veya ADMIN'e açıktır. Listeleme, eski CRUD oluşturma
+ve silme ADMIN gerektirir. Ayrıntılar: [RBAC erişim matrisi](rbac-proposal.md).
+Kulübe özel yönetici üyelikleri sonraki kulüp modülünde geliştirilecektir.
 
 ## CRUD sözleşmesi
 
@@ -24,7 +25,7 @@ ve admin kuralları sonraki yetkilendirme aşamasındadır.
   Bütünlük çakışmaları SQL ayrıntısı içermeyen 409 yanıtına çevrilir.
 - Validation yanıtı mevcut alan-hata haritasıdır; diğer iş hataları `ErrorResponse` kullanır.
 - DTO kullanımı yetkilendirme sağlamaz. CRUD endpoint'leri authentication gerektirir;
-  JWT authentication hazırdır; kullanıcıya özel erişim kuralları sonraki aşamadadır.
+  JWT authentication ve servis katmanındaki rol/sahiplik kontrolleri birlikte uygulanır.
 - E-postaların büyük/küçük harf davranışı ve mevcut kayıtlar değiştirilmemiştir.
   Büyük/küçük harften bağımsız giriş tasarımı için mevcut kayıtlar incelenip ayrıca karar verilmelidir.
 
@@ -77,7 +78,7 @@ Geçersiz alan: 400. Aynı e-posta: 409.
   Kaynak: [Spring Security Password Encoding](https://docs.spring.io/spring-security/reference/features/integrations/cryptography.html).
 - Mevcut eski hesaplara ortak veya geçici parola atanmaz. Parolası NULL olanlar,
   ileride e-posta sahipliği doğrulanarak parola belirleyene kadar parola ile giriş yapamayacaktır.
-- Register oturum veya JWT üretmez. Yalnızca POST register herkese açıktır;
+- Register oturum veya JWT üretmez. POST register ve POST login herkese açıktır;
   diğer endpoint'ler için authentication şartı korunur.
 - Login/JWT aşamasından itibaren API stateless Bearer authentication kullanır;
   session, form login ve HTTP Basic devre dışıdır. Cookie ile kimlik doğrulaması
@@ -104,7 +105,7 @@ Bu aşamada bağlantıya eklenen `options=-c%20default_transaction_read_only%3Do
 JDBC parametresiyle veritabanında yazma işlemleri ayrıca engellendi.
 
 Son sonuç: Java 21 / Spring Boot 4.1.1 / Spring Security 7.1.1 ile
-**57 test geçti, 0 hata, 0 atlanan test**.
+**69 test geçti, 0 hata, 0 atlanan test** (RBAC öncesindeki 57 test de ayrıca doğrulandı).
 Kapsam: CRUD, DTO alanları, hash'in yanıt dışında kalması, mevcut hash/NULL korunması,
 validation, 72 bayt ASCII/Unicode sınırları, BCrypt doğrulama ve salt davranışı,
 anonim erişim, e-posta yarış çakışması, hata ayrıntılarının gizlenmesi ve gerçek şema doğrulaması.
@@ -135,8 +136,8 @@ Akış:
    issuer, audience, expiration, issued-at ve kullanıcı ID biçimi doğrulanır.
    `nbf` varsa kontrol edilir. Süre toleransı sıfırdır; iki sunucu varsa saatler senkron olmalıdır.
 6. Eksik/geçersiz/süresi dolmuş token 401, doğrulanmış fakat gereken yetkisi olmayan
-   istek 403 JSON alır. Gerçek rol modeli eklenmedi; 403 davranışı testlere özel
-   bir admin endpoint'i ve gerçek method security ile doğrulanır.
+   istek 403 JSON alır. Roller token claim'lerinden değil her istekte güncel kullanıcı
+   kaydından okunur. Servis method security profil sahipliğini ve admin işlemlerini doğrular.
 
 Özel JWT filtresi yazılmadı; Spring'in yerleşik Bearer doğrulama zinciri kullanılır.
 Kaynak: [Spring Security JWT Resource Server](https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html).
@@ -166,7 +167,7 @@ Kaynak: [Spring Security JWT Resource Server](https://docs.spring.io/spring-secu
 
 ### JWT testleri
 
-21 yeni test çalıştırması: başarılı login ve gerçek korumalı CRUD erişimi, yanlış/olmayan/eski
+İlk JWT aşamasında 21, RBAC sonrasında 33 JWT/güvenlik test çalıştırması: başarılı login ve gerçek korumalı CRUD erişimi, yanlış/olmayan/eski
 hesaplarda aynı 401 yanıtı, dolmuş ve tam süre sınırındaki token, gelecekteki iat/nbf,
 yanlış issuer/audience, eksik zorunlu claim'ler, hatalı subject, bozuk token, değiştirilmiş
 imza, imzasız token, 401/403 ayrımı, Basic ve session cookie reddi, parola sınırları,

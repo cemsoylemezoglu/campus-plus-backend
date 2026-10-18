@@ -1,5 +1,18 @@
 # Campus+ yerel çalıştırma
 
+## Anahtar oluşturma (yalnızca ilk kurulum)
+
+Bu bilgisayardaki mevcut anahtar kontrol edildi ve korundu; tekrar üretmek gerekmiyor.
+Yeni bir kurulumda, değeri ekrana yazmadan oluşturma örneği:
+
+```sh
+mkdir -p -m 700 ~/.campus-plus-local
+(umask 077; set -C; openssl rand -base64 32 > ~/.campus-plus-local/jwt-secret)
+```
+
+`set -C` mevcut dosyanın üzerine yazmayı engeller. Mevcut anahtarı değiştirmek eski
+JWT imzalarını geçersiz kılar. Gerçek anahtar kaynak koduna veya Git'e konulmaz.
+
 ## IntelliJ IDEA ortam değişkenleri
 
 Yerel anahtar proje dışında `~/.campus-plus-local/jwt-secret` dosyasında tutulur.
@@ -52,3 +65,16 @@ ve backend log dosyalarında bulunmadığı ayrıca kontrol edildi.
 
 IntelliJ'den başlatmaya engel olmaması için yalnızca bu testte açılan Java örneği
 kapatıldı. Başka servis, veritabanı veya proje kullanılmadı. Commit/push yapılmadı.
+
+
+## RBAC sonrası güncel sonuç
+
+İlk doğrulamanın yukarıdaki tarihsel sonucu korunmuştur. Sonraki çalışmada başlangıçtaki
+57 test yeniden geçti; onaylı RBAC migration ve güvenlik testlerinden sonra tam takım
+69 test ile başarılı oldu. Ayrı test kullanıcıları ID 3 ve ID 4 eklendi; önceki tüm
+users alanları korundu. Toplam 4 kullanıcı vardır, tamamı STUDENT; otomatik ADMIN yoktur.
+
+Artık öğrenci token'ıyla `GET /api/users` 403 alır. Kendi profilini doğrulamak için
+`GET /api/users/{login-yapılan-kullanıcının-id-si}` kullanın: geçerli token 200, tokensız 401,
+başka kullanıcı ID'si 403. `PUT` için de sahiplik kontrol edilir. Ayrıntılar ve dosya listesi:
+[RBAC](rbac-proposal.md). JWT_SECRET mevcut dosyada korunmuştur; IntelliJ ortamı otomatik değiştirilmemiştir.
