@@ -193,3 +193,13 @@ Tam takım gerçek şemaya yalnızca doğrulanmış `127.0.0.1:5434/campus_plus`
 - `CampusPlusBackendApplicationTests`, `AuthControllerTest`: geçici test anahtarı ve 401 beklentileri.
 - `security/JwtAuthenticationTest`, `security/JwtTestKeys`: JWT testleri ve bellek içi anahtar üretimi.
 - `docs/development.md`: güncel sözleşme ve çalışma notları.
+
+
+## University / StudentProfile — V003 sonrası güncel durum
+
+2026-10-18: Kullanıcı onayıyla V003 yalnızca Campus+ PostgreSQL 17 üzerinde uygulandı.
+University ve StudentProfile aşaması gerçek schema validate, **113 başarılı otomatik test**
+ve **24 başarılı canlı HTTP kontrolü** ile tamamlandı. Mevcut kullanıcı/parola/roller korundu.
+Ayrı test kullanıcısı ID 5 ve pasif test üniversitesi ID 1 ile ilişkili profil bırakıldı;
+onaylı geçici ADMIN rolü kaldırıldı. Club/ClubMembership'e başlanmadı; commit/push yapılmadı.
+Ayrıntılar: [Akademik modüller incelemesi](academic-phase1-review.md).
