@@ -21,9 +21,9 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(401, "Giriş başarısız", "E-posta veya parola hatalı."));
     }
 
-    @ExceptionHandler(UserNotFoundException.class)
+    @ExceptionHandler({UserNotFoundException.class, ResourceNotFoundException.class})
     public ResponseEntity<ErrorResponse> handleUserNotFound(
-            UserNotFoundException exception) {
+            RuntimeException exception) {
 
         ErrorResponse error = new ErrorResponse(
                 404,
@@ -36,9 +36,9 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
-    @ExceptionHandler(EmailAlreadyExistsException.class)
+    @ExceptionHandler({EmailAlreadyExistsException.class, ResourceConflictException.class})
     public ResponseEntity<ErrorResponse> handleEmailAlreadyExists(
-            EmailAlreadyExistsException exception) {
+            RuntimeException exception) {
 
         ErrorResponse error = new ErrorResponse(
                 409,
@@ -58,6 +58,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(
                 409, "Çakışma", "İşlem mevcut kayıtlarla çakışıyor. Gönderdiğiniz bilgileri kontrol ediniz."
         ));
+    }
+
+    @ExceptionHandler({org.springframework.dao.OptimisticLockingFailureException.class,
+            org.springframework.dao.PessimisticLockingFailureException.class})
+    public ResponseEntity<ErrorResponse> handleConcurrentChange(RuntimeException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(
+                409, "Çakışma", "Kayıt değişti veya işlem şu anda kilitli; güncel veriyi alıp tekrar deneyiniz."));
+    }
+
+    @ExceptionHandler({jakarta.validation.ConstraintViolationException.class,
+            org.springframework.web.method.annotation.HandlerMethodValidationException.class,
+            org.springframework.http.converter.HttpMessageNotReadableException.class})
+    public ResponseEntity<ErrorResponse> handleInvalidInput(Exception exception) {
+        return ResponseEntity.badRequest().body(new ErrorResponse(400, "Geçersiz istek", "İstek alanlarını ve sınırlarını kontrol ediniz."));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
