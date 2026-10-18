@@ -14,6 +14,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.context.annotation.Bean;
+import org.springframework.test.context.support.TestPropertySourceUtils;
+import com.campusplus.backend.security.JwtTestKeys;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -55,6 +57,7 @@ class AuthControllerTest {
     void setUp() {
         context = new AnnotationConfigWebApplicationContext();
         context.setServletContext(new MockServletContext());
+        TestPropertySourceUtils.addInlinedPropertiesToEnvironment(context, "JWT_SECRET=" + JwtTestKeys.newSecret());
         context.register(TestConfig.class);
         context.refresh();
         repository = context.getBean(UserRepository.class);
@@ -166,10 +169,10 @@ class AuthControllerTest {
 
     @Test
     void otherEndpointsRemainProtectedWithoutBearerAuthentication() throws Exception {
-        mvc.perform(get("/api/users")).andExpect(status().isForbidden());
-        mvc.perform(get("/api/auth/register")).andExpect(status().isForbidden());
+        mvc.perform(get("/api/users")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/auth/register")).andExpect(status().isUnauthorized());
         mvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON).content("{}"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
         verifyNoInteractions(repository);
     }
 
