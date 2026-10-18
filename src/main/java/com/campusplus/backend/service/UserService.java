@@ -9,6 +9,7 @@ import com.campusplus.backend.exception.EmailAlreadyExistsException;
 import com.campusplus.backend.exception.UserNotFoundException;
 import com.campusplus.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -23,6 +24,7 @@ public class UserService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public UserResponse saveUser(CreateUserRequest request) {
         User user = new User(request.name(), request.email());
         if (userRepository.existsByEmail(user.getEmail())) {
@@ -34,10 +36,12 @@ public class UserService {
         return UserResponse.from(userRepository.save(user));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream().map(UserResponse::from).toList();
     }
 
+    @PreAuthorize("@userAccess.canAccess(authentication, #id)")
     public UserResponse getUserById(Long id) {
         return UserResponse.from(findUser(id));
     }
@@ -50,6 +54,7 @@ public class UserService {
     }
 
     @Transactional
+    @PreAuthorize("@userAccess.canAccess(authentication, #id)")
     public UserResponse updateUser(Long id, UpdateUserRequest updatedUser) {
 
         User user = findUser(id);
@@ -64,6 +69,7 @@ public class UserService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteUser(Long id) {
 
         User user = findUser(id);

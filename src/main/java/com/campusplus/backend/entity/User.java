@@ -1,6 +1,8 @@
 package com.campusplus.backend.entity;
 
 import jakarta.persistence.*;
+import java.util.EnumSet;
+import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -48,6 +50,25 @@ public class User {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, length = 20)
+    private Set<Role> roles = EnumSet.of(Role.STUDENT);
+
+    @JsonIgnore
+    public Set<Role> getRoles() {
+        return Set.copyOf(roles);
+    }
+
+    public void grantRole(Role role) {
+        roles.add(java.util.Objects.requireNonNull(role));
+    }
+
+    public void revokeRole(Role role) {
+        roles.remove(role);
     }
 
     @Id

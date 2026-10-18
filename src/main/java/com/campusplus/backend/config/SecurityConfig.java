@@ -1,5 +1,8 @@
 package com.campusplus.backend.config;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import com.campusplus.backend.security.DatabaseJwtAuthenticationConverter;
+import com.campusplus.backend.security.UserAccessPolicy;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -12,7 +15,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@Import(JwtConfig.class)
+@EnableMethodSecurity
+@Import({JwtConfig.class, DatabaseJwtAuthenticationConverter.class, UserAccessPolicy.class})
 public class SecurityConfig {
 
     @Bean
@@ -21,7 +25,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, DatabaseJwtAuthenticationConverter converter) throws Exception {
 
         JsonSecurityErrors errors = new JsonSecurityErrors();
         // All API authentication is explicit Authorization: Bearer, never a cookie or session.
@@ -34,10 +38,13 @@ public class SecurityConfig {
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint(errors).accessDeniedHandler(errors))
                 .oauth2ResourceServer(resource -> resource
-                        .jwt(jwt -> {})
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(converter))
                         .authenticationEntryPoint(errors).accessDeniedHandler(errors))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/users").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/users").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasRole("ADMIN")
                         .anyRequest().authenticated());
 
         return http.build();
