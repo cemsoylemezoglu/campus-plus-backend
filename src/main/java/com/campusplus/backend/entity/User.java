@@ -1,6 +1,7 @@
 package com.campusplus.backend.entity;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
@@ -34,6 +35,19 @@ public class User {
 
     public Long getId() {
         return id;
+    }
+
+    // Nullable for accounts created before password-based registration.
+    @Column(name = "password_hash", length = 255)
+    private String passwordHash;
+
+    @JsonIgnore
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     @Id

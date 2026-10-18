@@ -8,6 +8,9 @@ import com.campusplus.backend.exception.UserNotFoundException;
 import com.campusplus.backend.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
@@ -51,11 +54,15 @@ class UserServiceTest {
         verify(repository, never()).save(any());
     }
 
-    @Test
-    void updateAllowsKeepingOwnEmail() {
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"existing-password-hash"})
+    void updateAllowsKeepingOwnEmailAndPreservesPasswordHash(String existingHash) {
+        user.setPasswordHash(existingHash);
         when(repository.findById(1L)).thenReturn(Optional.of(user));
         when(repository.save(user)).thenReturn(user);
         var response = service.updateUser(1L, new UpdateUserRequest("Yeni isim", user.getEmail()));
+        assertEquals(existingHash, ReflectionTestUtils.getField(user, "passwordHash"));
         assertEquals("Yeni isim", response.name());
         assertEquals(1L, response.id());
         verify(repository).existsByEmailAndIdNot("cem@example.com", 1L);

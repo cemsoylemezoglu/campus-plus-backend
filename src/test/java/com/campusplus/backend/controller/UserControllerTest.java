@@ -32,6 +32,7 @@ class UserControllerTest {
         repository = mock(UserRepository.class);
         User user = new User("Cem", "cem@example.com");
         ReflectionTestUtils.setField(user, "id", 1L);
+        user.setPasswordHash("existing-password-hash");
         when(repository.findById(1L)).thenReturn(Optional.of(user));
         when(repository.findAll()).thenReturn(List.of(user));
         when(repository.save(any(User.class))).thenAnswer(invocation -> {
