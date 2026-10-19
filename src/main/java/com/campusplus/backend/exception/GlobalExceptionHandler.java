@@ -74,6 +74,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(new ErrorResponse(400, "Geçersiz istek", "İstek alanlarını ve sınırlarını kontrol ediniz."));
     }
 
+    @ExceptionHandler(InvalidRequestException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidRequest(InvalidRequestException exception) {
+        return ResponseEntity.badRequest().body(new ErrorResponse(400, "Geçersiz istek", exception.getMessage()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationErrors(
             MethodArgumentNotValidException exception) {

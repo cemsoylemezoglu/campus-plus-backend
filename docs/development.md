@@ -10,7 +10,7 @@
 
 Profil okuma/güncelleme kullanıcıya veya ADMIN'e açıktır. Listeleme, eski CRUD oluşturma
 ve silme ADMIN gerektirir. Ayrıntılar: [RBAC erişim matrisi](rbac-proposal.md).
-Kulübe özel yönetici üyelikleri sonraki kulüp modülünde geliştirilecektir.
+Kulübe özel yönetici üyelikleri Club/ClubMembership modülünde uygulanmıştır; güncel sonuçlar aşağıdadır.
 
 ## CRUD sözleşmesi
 
@@ -203,3 +203,19 @@ ve **24 başarılı canlı HTTP kontrolü** ile tamamlandı. Mevcut kullanıcı/
 Ayrı test kullanıcısı ID 5 ve pasif test üniversitesi ID 1 ile ilişkili profil bırakıldı;
 onaylı geçici ADMIN rolü kaldırıldı. Club/ClubMembership'e başlanmadı; commit/push yapılmadı.
 Ayrıntılar: [Akademik modüller incelemesi](academic-phase1-review.md).
+
+
+## Club / ClubMembership — 2026-10-19, migration ve canlı doğrulama tamamlandı
+
+Kulüp/üyelik uygulaması, OWNER/MANAGER/MEMBER ve kaynak yetkileri kodlandı.
+V004/V005 açık kullanıcı onayıyla yalnızca `127.0.0.1:5434/campus_plus` PostgreSQL 17.11 üzerinde
+sırasıyla ve ayrı transaction'larla uygulandı. `ddl-auto=validate` korundu; `contextLoads()` dahil
+164 otomatik test başarılı. Gerçek HTTP/PostgreSQL üzerinde 93 kontrol geçti: yetkilendirme,
+paralel başvuru/güncelleme/devir/üniversite değişimi, gerçek lock wait, constraint ve SQL rollback.
+
+Migration öncesindeki 5 kullanıcı, 5 rol ilişkisi, 1 üniversite ve 1 profil değişmeden korundu.
+Canlı testler için yeni kullanıcılar 6–12, pasif üniversiteler 2–3, arşivlenmiş kulüpler 1–4 ve
+6 yeni öğrenci profili bırakıldı. Bütün test hesapları yalnızca STUDENT; geçici ADMIN kaldırıldı.
+Test aracı `scripts/verify_clubs_postgres.py` açık opt-in gerektirir ve her çalışmada yeni test
+verileri oluşturur. Git kaydı kullanıcı tarafından ayrıca onaylandı.
+[Kapsam ve ayrıntılı doğrulama](club-phase-review.md).

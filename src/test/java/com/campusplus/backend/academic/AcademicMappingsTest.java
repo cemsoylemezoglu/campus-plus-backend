@@ -32,6 +32,7 @@ class AcademicMappingsTest {
                 .build();
         factory = new MetadataSources(registry).addAnnotatedClass(User.class)
                 .addAnnotatedClass(University.class).addAnnotatedClass(StudentProfile.class)
+                .addAnnotatedClass(Club.class).addAnnotatedClass(ClubMembership.class)
                 .buildMetadata().buildSessionFactory();
     }
     @AfterAll
@@ -42,12 +43,12 @@ class AcademicMappingsTest {
     @Test
     void repositoryHqlCompilesAgainstRealEntityMetadataWithoutConnecting() {
         try (var session = factory.openSession()) {
-            for (Class<?> type : new Class<?>[]{UniversityRepository.class, UserRepository.class}) {
+            for (Class<?> type : new Class<?>[]{UniversityRepository.class, UserRepository.class, ClubRepository.class, ClubMembershipRepository.class}) {
                 for (var method : type.getDeclaredMethods()) {
                     Query annotation = method.getAnnotation(Query.class);
                     if (annotation != null) {
-                        Class<?> resultType = type == UniversityRepository.class ? University.class : User.class;
-                        assertDoesNotThrow(() -> session.createQuery(annotation.value(), resultType));
+                        // Projection, count and entity queries intentionally have different result types.
+                        assertDoesNotThrow(() -> session.createQuery(annotation.value()));
                     }
                 }
             }

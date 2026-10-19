@@ -1,8 +1,10 @@
 # Campus+ — Üniversite, öğrenci profili, kulüp ve üyelik tasarımı
 
-Durum: **tasarım; geliştirme ve migration için kullanıcı onayı bekleniyor**.
-Bu belge dışında yeni modül kodu veya migration dosyası oluşturulmadı. Buradaki
-isimler ve API sözleşmeleri öneridir; mevcut çalışan authentication/RBAC korunur.
+Durum güncellemesi (2026-10-19): Tasarım kullanıcı tarafından onaylandı. University/StudentProfile
+ve V003 önceki aşamada tamamlandı. Club/ClubMembership geliştirildi; V004/V005 açık kullanıcı
+onayıyla yalnızca Campus+ PostgreSQL 17'ye uygulandı. **164 otomatik test ve 93 canlı kontrol geçti.**
+Aşağıdaki bölüm başlangıç tasarımıdır; gerçekleşen API sözleşmesi, migration ve test sonuçları
+[kulüp aşama raporunda](club-phase-review.md). Git işlemleri ayrıca kullanıcı onayıyla yürütülür.
 
 ## 1. Kapsam ve temel kararlar
 

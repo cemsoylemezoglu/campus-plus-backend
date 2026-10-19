@@ -64,10 +64,11 @@ class AcademicModulesTest {
 
     @Configuration @EnableWebMvc @EnableWebSecurity
     @Import({SecurityConfig.class, CurrentActor.class, UniversityService.class, StudentProfileService.class,
-            UniversityController.class, StudentProfileController.class, GlobalExceptionHandler.class})
+            UniversityController.class, StudentProfileController.class, GlobalExceptionHandler.class, StudentProfilePolicy.class})
     static class Config {
         @Bean UserRepository users() { return mock(UserRepository.class); }
         @Bean UniversityRepository universities() { return mock(UniversityRepository.class); }
+        @Bean ClubMembershipRepository memberships() { return mock(ClubMembershipRepository.class); }
         @Bean StudentProfileRepository profiles() { return mock(StudentProfileRepository.class); }
         @Bean @Primary Clock clock() { return Clock.fixed(NOW, ZoneOffset.UTC); }
         @Bean static MethodValidationPostProcessor methodValidation() {

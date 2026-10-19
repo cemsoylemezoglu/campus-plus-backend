@@ -5,6 +5,7 @@ import com.campusplus.backend.entity.*;
 import com.campusplus.backend.exception.*;
 import com.campusplus.backend.repository.*;
 import com.campusplus.backend.security.CurrentActor;
+import com.campusplus.backend.security.StudentProfilePolicy;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import java.time.Clock;
@@ -21,10 +22,11 @@ public class StudentProfileService {
     private final UniversityRepository universities;
     private final CurrentActor actor;
     private final Clock clock;
+    private final StudentProfilePolicy membershipPolicy;
     public StudentProfileService(StudentProfileRepository profiles, UserRepository users,
-                                 UniversityRepository universities, CurrentActor actor, Clock clock) {
+                                 UniversityRepository universities, CurrentActor actor, Clock clock, StudentProfilePolicy membershipPolicy) {
         this.profiles = profiles; this.users = users; this.universities = universities;
-        this.actor = actor; this.clock = clock;
+        this.actor = actor; this.clock = clock; this.membershipPolicy = membershipPolicy;
     }
     @PreAuthorize("hasAnyRole('STUDENT','CLUB_ADMIN','ADMIN')")
     public StudentProfileResponse getOwn() { return response(actor.userId()); }
@@ -63,8 +65,7 @@ public class StudentProfileService {
         if (!university.getId().equals(profile.getUniversity().getId()) && !university.isActive()) {
             throw new ResourceConflictException("Pasif üniversiteye geçiş yapılamaz.");
         }
-        // Phase 1 has no membership module. ClubMembership implementation must add its
-        // blocking-status check here under the SAME user lock before enabling memberships.
+        if (!university.getId().equals(profile.getUniversity().getId())) membershipPolicy.requireUniversityChangeAllowed(id);
         profile.update(university, request.department(), request.studyYear(), request.bio(), clock.instant());
         return StudentProfileResponse.from(profiles.saveAndFlush(profile));
     }
