@@ -1,0 +1,37 @@
+-- UNAPPLIED PROPOSAL. Only AFTER approved V005 migrate + contract comparison succeed.
+-- Run as campus_plus_test_migrator (or the authorized administrator), in test DB only.
+\set ON_ERROR_STOP on
+BEGIN;
+SET LOCAL lock_timeout = '5s';
+SET LOCAL statement_timeout = '10s';
+DO $$
+BEGIN
+    IF current_database() <> 'campus_plus_test'
+       OR host(inet_server_addr()) IS DISTINCT FROM '127.0.0.1'
+       OR inet_server_port() IS DISTINCT FROM 5434
+       OR current_setting('server_version_num')::integer NOT BETWEEN 170000 AND 179999
+       OR (SELECT pg_get_userbyid(datdba) FROM pg_database WHERE datname=current_database())
+          IS DISTINCT FROM 'campus_plus_test_migrator' THEN
+        RAISE EXCEPTION 'Unauthorized test database or owner';
+    END IF;
+    IF (SELECT count(*) FROM public.flyway_schema_history
+        WHERE version='005' AND type='SQL' AND success) <> 1
+       AND (SELECT count(*) FROM public.flyway_schema_history
+        WHERE version='5' AND type='SQL' AND success) <> 1 THEN
+        RAISE EXCEPTION 'Expected successful SQL V005 migration, not a baseline marker';
+    END IF;
+    IF EXISTS (SELECT FROM pg_roles WHERE rolname='campus_plus_test_runner'
+        AND (rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication OR rolbypassrls))
+       OR EXISTS (SELECT FROM pg_auth_members m JOIN pg_roles r ON r.oid=m.member
+                  WHERE r.rolname='campus_plus_test_runner') THEN
+        RAISE EXCEPTION 'Unexpected privileged test runner';
+    END IF;
+END $$;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE
+    public.users, public.user_roles, public.universities, public.student_profiles,
+    public.clubs, public.club_memberships TO campus_plus_test_runner;
+GRANT USAGE, SELECT ON SEQUENCE
+    public.users_id_seq, public.universities_id_seq,
+    public.clubs_id_seq, public.club_memberships_id_seq TO campus_plus_test_runner;
+-- No TRUNCATE, DDL, role membership, history access or broad future-table grants.
+COMMIT;

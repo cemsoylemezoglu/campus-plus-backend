@@ -1,0 +1,7 @@
+{
+  "V001__add_user_password_hash.sql": "89c695b40e1d1c786184602b3998acbbccdce4e6434bfb4cada504dab3033576",
+  "V002__add_user_roles.sql": "3d3dc43e9fad2f6b7232f21f4d9c2e62e92003138f160fab3fc26762e79133fa",
+  "V003__add_universities_and_student_profiles.sql": "3a1df7054d40baf70720ef01c919a8cbdfac6cf111024e3429368d4a2ed7eaec",
+  "V004__add_clubs.sql": "ef2f3a5ed1705de0947dbea3753f3d81dc2fd8035340173c53221a8d675ad7fa",
+  "V005__add_club_memberships.sql": "547c26d089f5f21edc7f16ba865cfa668e6380dcdfdf0be165892be42e3d3a72"
+}

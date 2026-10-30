@@ -31,3 +31,12 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Local secrets (the application does not auto-load dotenv files) ###
+.env
+.env.*
+!.env.example
+
+### Local Python tooling caches ###
+__pycache__/
+*.py[cod]

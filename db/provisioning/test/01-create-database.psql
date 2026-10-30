@@ -1,0 +1,42 @@
+-- UNAPPLIED PROPOSAL. Explicit approval required. psql -X -f, NOT --single-transaction.
+-- Connect only to 127.0.0.1:5434/campus_plus with an authorized PG17 administrator.
+\set ON_ERROR_STOP on
+\set AUTOCOMMIT on
+SET statement_timeout = '30s';
+SET lock_timeout = '5s';
+DO $$
+BEGIN
+    IF current_database() <> 'campus_plus'
+       OR host(inet_server_addr()) IS DISTINCT FROM '127.0.0.1'
+       OR inet_server_port() IS DISTINCT FROM 5434
+       OR current_setting('server_version_num')::integer NOT BETWEEN 170000 AND 179999 THEN
+        RAISE EXCEPTION 'Unauthorized Campus+ provisioning target';
+    END IF;
+    IF NOT (SELECT rolsuper FROM pg_roles WHERE rolname=current_user) THEN
+        RAISE EXCEPTION 'Use an explicitly authorized PG17 administrator; do not elevate the application account';
+    END IF;
+    IF EXISTS (SELECT FROM pg_database WHERE datname='campus_plus_test')
+       OR EXISTS (SELECT FROM pg_roles WHERE rolname IN
+           ('campus_plus_test_migrator','campus_plus_test_runner')) THEN
+        RAISE EXCEPTION 'Test database or role already exists; stop and inspect, never drop/reuse automatically';
+    END IF;
+    IF NOT EXISTS (SELECT FROM pg_database WHERE datname=current_database()
+        AND pg_encoding_to_char(encoding)='UTF8' AND datlocprovider='c'
+        AND datcollate='en_US.UTF-8' AND datctype='en_US.UTF-8') THEN
+        RAISE EXCEPTION 'Source locale differs from reviewed contract';
+    END IF;
+END $$;
+
+BEGIN;
+CREATE ROLE campus_plus_test_migrator NOLOGIN PASSWORD NULL
+    NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS;
+CREATE ROLE campus_plus_test_runner NOLOGIN PASSWORD NULL
+    NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS;
+COMMIT;
+
+-- PostgreSQL forbids CREATE DATABASE inside a transaction block.
+CREATE DATABASE campus_plus_test OWNER campus_plus_test_migrator TEMPLATE template0
+    ENCODING 'UTF8' LOCALE_PROVIDER libc LC_COLLATE 'en_US.UTF-8' LC_CTYPE 'en_US.UTF-8';
+REVOKE ALL ON DATABASE campus_plus_test FROM PUBLIC;
+GRANT CONNECT ON DATABASE campus_plus_test TO campus_plus_test_runner;
+-- If any step fails, stop. Roles/database may remain; do not auto-drop or rerun.

@@ -92,4 +92,72 @@
 		</plugins>
 	</build>
 
+	<profiles>
+		<profile>
+			<id>schema-tools</id>
+			<properties>
+				<!-- Preparing the tools does not authorize any database operation. -->
+				<flyway.skip>true</flyway.skip>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.flywaydb</groupId>
+						<artifactId>flyway-maven-plugin</artifactId>
+						<version>${flyway.version}</version>
+						<!-- No lifecycle execution: never runs at application startup or ordinary test/package. -->
+						<configuration>
+							<skip>${flyway.skip}</skip>
+							<url>${env.MIGRATION_DB_URL}</url>
+							<user>${env.MIGRATION_DB_USERNAME}</user>
+							<password>${env.MIGRATION_DB_PASSWORD}</password>
+							<locations>
+								<location>filesystem:${project.basedir}/db/managed-migrations</location>
+							</locations>
+							<defaultSchema>public</defaultSchema>
+							<schemas><schema>public</schema></schemas>
+							<createSchemas>false</createSchemas>
+							<cleanDisabled>true</cleanDisabled>
+							<baselineOnMigrate>false</baselineOnMigrate>
+							<baselineVersion>5</baselineVersion>
+							<baselineDescription>Campus+ reviewed V005 schema</baselineDescription>
+							<target>5</target>
+							<outOfOrder>false</outOfOrder>
+							<validateOnMigrate>true</validateOnMigrate>
+							<validateMigrationNaming>true</validateMigrationNaming>
+							<failOnMissingLocations>true</failOnMissingLocations>
+						</configuration>
+						<dependencies>
+							<dependency>
+								<groupId>org.flywaydb</groupId>
+								<artifactId>flyway-database-postgresql</artifactId>
+								<version>${flyway.version}</version>
+							</dependency>
+							<dependency>
+								<groupId>org.postgresql</groupId>
+								<artifactId>postgresql</artifactId>
+								<version>${postgresql.version}</version>
+							</dependency>
+						</dependencies>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>postgres-it</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-failsafe-plugin</artifactId>
+						<!-- Version and integration-test/verify executions come from the Boot parent. -->
+						<configuration>
+							<failIfNoTests>true</failIfNoTests>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 </project>
