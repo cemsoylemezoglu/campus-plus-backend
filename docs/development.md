@@ -1,4 +1,32 @@
+> Güncel durum (2026-10-31): ana Campus+ DB'ye onayla yalnız Flyway version 5
+> BASELINE metadata'sı eklendi; iş verileri/şema/yetkiler korundu. Normal jar
+> Hibernate validate ve salt okunur GET kontrolü başarılı. 203 Java / 23 Python testi
+> yeniden geçti. CI hazır, uzak run ilk onaylı push sonrasında.
+> [4. aşama uygulama raporu](setup-test-stage4-review.md).
+
+> 4. aşama hazırlığı (2026-10-30): ana DB baseline SQL/etki planı ve iki işli
+> GitHub Actions hazır. 23 Python testi/actionlint geçti; ana DB metadata işlemi
+> onay bekliyor, uzak CI henüz çalıştırılmadı. [Hazırlık raporu](setup-test-stage4-preparation.md).
+
+> Güncel altyapı durumu (2026-10-30): izole `campus_plus_test` kuruldu, V005
+> Flyway SQL migration başarılı. 193 izole + 10 gerçek PostgreSQL Java testi ve
+> 16 Python testi geçti. Ana DB şema/verileri değişmedi; ana DB baseline ve CI
+> sonraki aşamadır. [3. aşama raporu](setup-test-stage3-review.md).
+
 # Campus+ geliştirme durumu
+
+Güncel çalıştırma/test komutları [README](../README.md) içindedir. Aşağıdaki eski aşamaların
+komutları ve satır/test sayıları tarihsel sonuçlardır. 2026-10-30 test ayrımı ile normal
+`./mvnw test` DB gerektirmez; gerçek context testi ayrı `postgres-it` profilindedir.
+
+Güncel altyapı sonucu: **189 izole test başarılı** (163 mevcut + 26 hedef güvenliği testi).
+Eksik test ayarı ve ana DB adresiyle entegrasyon profili beklenen şekilde bağlantı öncesi
+reddedildi. Gerçek context testi henüz yeniden çalıştırılmadı; test DB kurulumu onay bekliyor.
+Ayrıntılar: [1. aşama raporu](setup-test-stage1-review.md).
+
+2. altyapı aşaması: PostgreSQL 17.11 salt okunur incelendi; başlangıç SQL'i ve migration
+geçmişi dosyaları hazırlandı, DDL/DML uygulanmadı. 189 Java testi yeniden başarılı;
+13 Python aracı testi de geçti. [2. aşama sonucu](setup-test-stage2-review.md).
 
 ## Tamamlanan aşamalar
 

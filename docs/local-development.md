@@ -1,5 +1,10 @@
 # Campus+ yerel çalıştırma
 
+Güncel uygulama ve test komutları [README](../README.md) içindedir. Bu belgenin aşağıdaki
+2026-10-18 test sonuçları tarihsel kayıttır; güncel DB satır sayısı veya test komutu değildir.
+`contextLoads()` artık yalnız ayrı `postgres-it` profili ve TEST_DB_* ile çalışır;
+ana Campus+ DB'sine bağlanan normal Maven testi olarak kullanılmaz.
+
 ## Anahtar oluşturma (yalnızca ilk kurulum)
 
 Bu bilgisayardaki mevcut anahtar kontrol edildi ve korundu; tekrar üretmek gerekmiyor.
