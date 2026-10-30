@@ -1,0 +1,81 @@
+name: Backend tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - name: Check schema tooling and historical migration checksums
+        run: |
+          python3 -m unittest discover -s scripts/tests
+          python3 scripts/schema_tools.py verify-legacy
+      - name: Run isolated Java tests
+        run: ./mvnw -B -ntp clean test
+
+  postgres:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - name: Install PostgreSQL 17 binaries on the disposable runner
+        run: |
+          if [ ! -x /usr/lib/postgresql/17/bin/initdb ]; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ca-certificates curl locales
+            if ! apt-cache show postgresql-17 >/dev/null 2>&1; then
+              sudo install -d /usr/share/postgresql-common/pgdg
+              sudo curl --fail --silent --show-error -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+              echo 'deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main' | sudo tee /etc/apt/sources.list.d/campus-plus-pgdg.list >/dev/null
+              sudo apt-get update -qq
+            fi
+            sudo apt-get install -y postgresql-17
+          fi
+          sudo locale-gen en_US.UTF-8
+      - name: Create a private test cluster (no Docker or local databases)
+        run: python3 scripts/ci_postgres.py
+      - name: Apply only V005 to the empty test database
+        run: |
+          python3 scripts/schema_tools.py verify-legacy
+          ./mvnw -B -ntp -Pschema-tools -Dflyway.skip=false flyway:migrate
+      - name: Verify complete schema and grant limited runner permissions
+        run: |
+          TEST_DB_USERNAME="$MIGRATION_DB_USERNAME" TEST_DB_PASSWORD="$MIGRATION_DB_PASSWORD" python3 scripts/schema_tools.py inspect --target test --psql /usr/lib/postgresql/17/bin/psql --output "$RUNNER_TEMP/campus-plus-schema.json"
+          python3 scripts/schema_tools.py compare --expected db/schema/v005-contract.json --actual "$RUNNER_TEMP/campus-plus-schema.json"
+          PGPASSWORD="$MIGRATION_DB_PASSWORD" /usr/lib/postgresql/17/bin/psql -X -w -h 127.0.0.1 -p 5434 -U campus_plus_test_migrator -d campus_plus_test -v ON_ERROR_STOP=1 -f db/provisioning/test/03-runtime-grants.psql
+      - name: Run real PostgreSQL HTTP and transaction tests
+        run: ./mvnw -B -ntp -Ppostgres-it verify
