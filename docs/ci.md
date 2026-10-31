@@ -1,12 +1,23 @@
+> Notification test DB aşaması (2026-11-01): workflow V005–V008 kurulum, V008 kontratı
+> ve sınırlı notification grant'i için hazır. 374 Java/36 Python ve actionlint başarılı.
+> Yeni workflow henüz push edilmedi/uzakta çalıştırılmadı. [Güncel sonuç](notification-test-validation.md).
+
+> Announcement test DB aşaması: workflow V005–V007 kurulum, V007 kontratı ve sınırlı
+> yeni tablo grant'i için hazırlandı. Yerelde 328 Java/34 Python testi ve actionlint
+> başarılı. V007 workflow'u henüz GitHub'a push edilmedi/uzakta çalıştırılmadı.
+> [Güncel doğrulama](announcement-test-validation.md).
+
 # Campus+ CI — hazırlanan doğrulama akışı
 
-Durum (2026-10-30): **workflow ve araçlar hazır; GitHub'da henüz çalıştırılmadı**.
-Commit/push yapılmadı. Dosyaların hazırlanması deployment veya ana DB migration onayı değildir.
+Durum (2026-10-31): **ilk GitHub çalışması başarılı; unit ve postgres işleri geçti**.
+`d0b250e` için [run 41144506168](https://github.com/cemsoylemezoglu/campus-plus-backend/actions/runs/41144506168)
+salt okunur GitHub API üzerinden doğrulandı. Bu, önceki V005 sürümünün sonucudur.
+V008 workflow güncellemesi henüz commit/push edilmedi ve GitHub üzerinde çalıştırılmadı.
 
 [Workflow](../.github/workflows/ci.yml) GitHub-hosted Ubuntu 24.04 üzerinde iki bağımsız
 iş tanımlar. Yerel Mac/Homebrew/PostgreSQL servislerini veya Docker'ı kullanmaz.
 Self-hosted runner tanımı yoktur. `main` push/PR ve workflow_dispatch tetikleyicileri
-vardır; ilk uzak çalışma ancak kullanıcı ayrıca push istediğinde mümkün olur.
+vardır; ilk çalışma kullanıcının ayrıca onayladığı push sonrasında gerçekleşti.
 
 ## İzole test işi
 
@@ -35,8 +46,9 @@ kullanılır; sır dosyaları veya test çıktıları cache'e konmaz.
    gizli terminal istemleriyle SCRAM olarak atanır. SQL/komut argümanı literal'i yoktur.
    Workflow masking kayıtları ve GITHUB_ENV üzerinden aynı job'a aktarılır; repo veya
    kalıcı GitHub secret gerekmez. Yerel sır dosyaları okunmaz.
-6. Yalnız test hedefiyle Flyway V005 migrate; tam şema kontratı karşılaştırması;
-   sonra sınırlı runner grant'leri ve `-Ppostgres-it verify` çalışır. CI işi testten
+6. Yalnız test hedefiyle Flyway V005→V008 migrate; V008 şema kontratı ve
+   managed SQL SHA-256 karşılaştırması; sonra temel/Event/Announcement/Notification sınırlı runner
+   grant'leri ve `-Ppostgres-it verify` çalışır. CI işi testten
    önce her seferinde boş DB kurduğu için kurulum yolunu da doğrular.
 
 Cluster yalnız disposable runner'ın ömrü kadardır. Otomatik DROP/clean/repair yoktur;
@@ -53,16 +65,19 @@ yüklenmez. Tekrar çalıştırma yeni runner üzerinde başlar.
 - Çalışan Java/Spring Boot/Security sürümleri veya runtime bağımlılıkları değişmedi.
 - Normal uygulama başlangıcı ve unit job otomatik migration çalıştırmaz.
 
-## Yerel doğrulama ve henüz kanıtlanmayanlar
+## Doğrulama ve sınırlar
 
-- 23 Python testi geçti (16 şema aracı + 7 CI sınır/terminal testi).
+- 36 Python testi geçti; hedef sınırları, sürümlü şema, SQL checksum ve CI testlerini içerir.
 - actionlint v1.7.12 statik workflow kontrolü başarılı. Araç /tmp'ye resmi release'ten,
   yayınlanan SHA-256 doğrulanarak alındı; projeye bağımlılık eklenmedi.
-- Yerel önceki tam Java doğrulaması 193 unit + 10 PostgreSQL IT başarılıydı. Bu aşamada
-  Java/uygulama kodu değişmediği için aynı paket tekrar çalıştırılmadı.
-- Ubuntu paket kurulumu, özel Linux cluster başlangıcı, psql terminal akışı ve GitHub
-  masking/export davranışı henüz gerçek hosted runner'da çalıştırılmadı. Mac'te bu
-  job taklit edilerek servis kurulmadı. İlk uzak run sonucu ayrıca incelenecek.
+- Güncel yerel test sonuçları [duyuru canlı doğrulama raporundadır](announcement-test-validation.md).
+  Önceki V005 sonucu 193 unit + 10 PostgreSQL IT başarılıydı.
+- Önceki gönderilmiş V005 workflow'unda özel Linux cluster başlangıcı, rol/password kurulum adımları, V005 migrate, şema
+  kontratı, runner grant ve gerçek HTTP/transaction testlerini içeren postgres işi
+  hosted runner'da başarılı tamamlandı. Paket kurulumu binary yoksa çalışan fallback'tir;
+  başarılı job tek başına bu fallback dalının çalıştığı iddiası değildir.
+  Mac'te bu job taklit edilerek servis kurulmadı. Masking/export kullanılan workflow
+  tamamlandı; bu sonuç tüm olası log/sır sızıntılarına karşı genel güvenlik kanıtı değildir.
 - PG17 minor sürümü/locale katalog çıktısı farklıysa kontrat farkı açık hata verir;
   otomatik gevşetilmez. Ağ/apt/action indirme sorunları ürün testi geçmiş sayılmaz.
 

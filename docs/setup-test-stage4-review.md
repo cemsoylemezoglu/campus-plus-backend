@@ -1,5 +1,9 @@
 # Kurulum / test altyapısı — 4. aşama uygulama sonucu
 
+> Sonraki doğrulama (2026-10-31): Kullanıcının onayladığı `d0b250e` push'ı sonrası
+> [CI run 41144506168](https://github.com/cemsoylemezoglu/campus-plus-backend/actions/runs/41144506168)
+> tamamlandı; unit ve postgres işleri başarılı. Aşağıdaki rapor baseline uygulama anını kaydeder.
+
 Tarih: 2026-10-31. **Ana DB baseline ve yerel doğrulamalar tamamlandı. CI hazır,
 uzak workflow ilk onaylı push sonrasında çalıştırılacak.** Commit/push yapılmadı.
 

@@ -1,3 +1,79 @@
+> Bildirim ana DB aşaması (2026-11-01): açık onayla V008 ve yalnız yeni nesne yetkileri
+> `127.0.0.1:5434/campus_plus` üzerinde uygulandı. Eski dokuz tablonun kayıt/yetkileri
+> korundu; Flyway/Hibernate/kontrat ve **32 salt okunur GET kontrolü başarılı**.
+> Önceki aynı kodun 374 Java/36 Python sonucu korunuyor; ana DB'de test verisi yok.
+> [Ana DB doğrulaması](notification-main-validation.md). Commit/push yapılmadı.
+> Uygulama içi bildirim aşaması tamamlandı; yeni modüle başlanmadı.
+> Aşağıdaki kayıtlar önceki aşamaların tarihsel sonuçlarıdır.
+
+> Bildirim test DB aşaması (2026-11-01): V008 ve yalnız yeni nesne yetkileri açık
+> onayla `campus_plus_test` üzerinde uygulandı. **374 Java / 36 Python testi başarılı**;
+> contextLoads ve 11 Notification PostgreSQL testi dahil. Eski dokuz tablonun kayıt/
+> yetkileri korundu. Ana DB'ye bağlanılmadı; V008 ana geçişi ayrı onay bekler.
+> [Canlı rapor ve sonraki onay planı](notification-test-validation.md). Commit/push yok.
+> Aşağıdaki kayıtlar önceki aşamaların tarihsel sonuçlarıdır.
+
+> Bildirim kod aşaması (2026-10-31): kişisel inbox/read/unread/read-all, güncel kaynak
+> gizliliği ve 23 domain bildirimi entegrasyonu hazır. **330 izole Java/34 Python testi
+> başarılı**; 11 yeni PostgreSQL IT derlendi, V008 onayı bekliyor. Ön kilit aşaması,
+> V007 test DB'de 297 izole+33 PG ile geçti; bu son Notification context sonucu değildir.
+> V008 review dizininde; ana DB'ye bağlanılmadı, şema/PG rolü/parola değişmedi. Commit/push yok.
+> [Kod, test sınırları ve kesin SQL onayı](notification-phase1-review.md).
+> Aşağıdaki kayıtlar önceki aşamaların tarihsel sonuçlarıdır.
+
+> Duyuru ana DB aşaması (2026-10-31): açık onayla V007 ve yalnız yeni nesne grant'leri
+> `127.0.0.1:5434/campus_plus` üzerinde uygulandı. Eski sekiz tablonun kayıt/yetkileri
+> korundu; Flyway/Hibernate/kontrat ve **22 salt okunur GET kontrolü başarılı**.
+> Önceki aynı kodun 328 Java/34 Python sonucu korunuyor; ana DB'ye test verisi eklenmedi.
+> [Ana DB uygulama raporu](announcement-main-validation.md). Commit/push yok.
+> Announcement tamamlandı; Notification geliştirmesine henüz başlanmadı.
+> Aşağıdaki kayıtlar önceki aşamaların tarihsel durumlarıdır.
+
+> Duyuru test DB aşaması (2026-10-31): V007 ve yalnız yeni nesne runtime grant'leri
+> açık onayla `campus_plus_test` üzerinde uygulandı. **328 Java / 34 Python testi geçti**;
+> contextLoads ve 8 yeni Announcement PostgreSQL testi dahil. Eski sekiz tablonun
+> kayıtları ve yetkileri korundu. Ana DB'ye bağlanılmadı; V007 ana geçişi ayrı onay bekler.
+> [Canlı doğrulama ve sonraki onay planı](announcement-test-validation.md). Commit/push yok.
+> Aşağıdaki kayıtlar önceki aşamaların tarihsel sonuçlarıdır.
+
+> Duyuru kod aşaması (2026-10-31): Announcement entity/DTO/policy/repository/servis/
+> controller ve kulüp arşiv entegrasyonu hazır. **297 izole Java / 32 Python testi geçti**;
+> yeni 8 PostgreSQL IT derlendi fakat V007 onayı beklediğinden çalıştırılmadı.
+> SQL Flyway discovery dışında hazır; bu adımda DB bağlantısı/SQL/commit/push yok.
+> [Kod, test, kesin SQL ve yalnız test DB onay noktası](announcement-phase1-review.md).
+> Notification henüz geliştirilmedi. Aşağıdaki kayıtlar tarihsel aşamalardır.
+
+> Sonraki aşama tasarımı (2026-10-31): [kulüp duyuruları ve uygulama içi bildirimler](announcements-notifications-architecture.md)
+> mevcut policy/transaction/kilit sırası incelenerek hazırlandı. Henüz yeni Java/SQL
+> veya DB işlemi yok; tasarım/kodlama onayı bekleniyor. V007/V008 uygulaması ayrıca
+> hedefi belirtilen açık onay isteyecek. Commit/push yapılmadı.
+
+> Event ana DB aşaması (2026-10-31): açık onayla V006 ve yalnız yeni nesne grant'leri
+> `127.0.0.1:5434/campus_plus` üzerinde uygulandı. Eski altı tablonun tüm kayıtları ve
+> mevcut ACL'leri korundu. Flyway validate, V006 kontratı, normal uygulama açılışı ve
+> **15 salt okunur GET kontrolü başarılı**. Önceki 273 Java/32 Python sonucu korunuyor;
+> Java kodu bu adımda değişmedi. Ana DB'de test verisi oluşturulmadı; commit/push yok.
+> [Ana DB uygulama raporu](event-main-validation.md). Aşağıdaki onay noktaları tarihseldir.
+
+> Event test DB aşaması (2026-10-31): V006 ve yalnız yeni nesnelerin runtime grant'leri
+> onayla `campus_plus_test` üzerinde uygulandı. 250 izole + 23 PostgreSQL = **273 Java**
+> ve **32 Python** testi başarılı; `contextLoads()` dahil, atlanan yok. Eski test DB
+> kayıtları ve mevcut yetkiler korundu. Ana DB V005; bu oturumda ona bağlanılmadı.
+> [Canlı doğrulama ve ayrı ana DB onay planı](event-test-validation.md).
+> Commit/push yapılmadı. Aşağıdaki kayıtlar önceki aşamaların tarihsel sonuçlarıdır.
+
+> Event kod aşaması (2026-10-31): Event/EventParticipation, yerel yönetim,
+> kontenjan/kayıt/iptal/check-in ve club/profile entegrasyonları geliştirildi.
+> 250 izole Java / 27 Python testi geçti. 10 yeni PostgreSQL IT derlendi;
+> V006 henüz hiçbir DB'de uygulanmadığı için canlı testler çalıştırılmadı.
+> [Kesin SQL ve yalnız test DB onay noktası](event-phase1-review.md).
+> Bu oturumda commit/push yapılmadı.
+
+> Event aşaması başlangıcı (2026-10-31): `d0b250e` için uzak CI unit/postgres
+> işleri başarılı doğrulandı. [Event/EventParticipation tasarımı](event-architecture.md)
+> hazır; ürün kuralları/kodlama onayı bekleniyor. Java kaynakları ve veritabanları
+> değiştirilmedi; bu tasarım oturumunda commit/push yapılmadı.
+
 > Güncel durum (2026-10-31): ana Campus+ DB'ye onayla yalnız Flyway version 5
 > BASELINE metadata'sı eklendi; iş verileri/şema/yetkiler korundu. Normal jar
 > Hibernate validate ve salt okunur GET kontrolü başarılı. 203 Java / 23 Python testi

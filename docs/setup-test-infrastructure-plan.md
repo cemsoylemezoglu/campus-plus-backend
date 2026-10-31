@@ -1,9 +1,16 @@
 # Campus+ — kurulum ve test altyapısı planı
 
-Güncelleme: 2026-10-31. Durum: **yerel 1–4. aşama kurulumu, ana DB baseline ve
-testler tamamlandı; CI dosyaları hazır, ilk uzak run onaylı push sonrasında**.
+Güncelleme: 2026-10-31. Durum: **1–4. aşama kurulumu, ana DB baseline, yerel testler
+ve ilk uzak CI tamamlandı; unit ve postgres işleri başarılı**.
 Bu belge kendi başına veritabanı veya servis ayarı değişikliği onayı değildir.
-Event / EventParticipation geliştirmesi başlamadı. Commit/push ara verileceği zaman,
+Bildirim V008 test ve ayrıca açık onayla ana DB'de uygulandı; 374 Java/36 Python
+ve ana ortamda 32 salt okunur API kontrolü başarılı. [V008 ana sonuç](notification-main-validation.md).
+Duyuru V007 test ve ayrıca açık onayla ana DB'de uygulandı; 328 Java/34 Python testi
+ve ana ortamda 22 salt okunur API kontrolü başarılı. [Ana DB sonucu](announcement-main-validation.md).
+Event / EventParticipation kodu ve V006 hazır; V006 ve sınırlı runtime grant
+test DB'sinde ve ayrıca açık onayla ana DB'de uygulandı. Ana ortamda şema/veri
+koruması ve 15 salt okunur API kontrolü başarılı. [Ana DB raporu](event-main-validation.md).
+[Güncel migration/test sonucu](event-test-validation.md). Commit/push ara verileceği zaman,
 kullanıcının ayrıca açık talimatıyla yapılacak.
 
 1. aşamada 189 izole test geçti; entegrasyon profilinin eksik/ana DB hedefini bağlantıdan
@@ -24,7 +31,7 @@ başarılı. Ana DB envanteri ve altı tablonun veri özetleri değişmedi. Ayr�
 4. aşamada [baseline planı](baseline-adoption-plan.md) onayla ana DB'de uygulandı;
 yalnız history tablosu/iki indeks ve tek version 5 BASELINE kaydı eklendi. Mevcut
 iş verileri, şema ve yetkiler korundu. 203 Java ve 23 Python testi yeniden geçti.
-[CI yapılandırması](ci.md) hazır/statik kontrolü başarılı; uzak CI henüz çalıştırılmadı.
+[CI yapılandırması](ci.md) ilk onaylı push sonrasında unit/postgres işlerini başarıyla tamamladı.
 [Uygulama raporu](setup-test-stage4-review.md).
 
 ## Başlangıç ve doğrulanmış eksikler
