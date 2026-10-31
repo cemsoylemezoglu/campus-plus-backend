@@ -1,0 +1,2 @@
+package com.campusplus.backend.entity;
+public enum EventEndCause { SELF_CANCELLED, EVENT_CANCELLED, MEMBERSHIP_ENDED, CLUB_ARCHIVED, REMOVED, REAPPLICATION_ALLOWED, NO_SHOW }

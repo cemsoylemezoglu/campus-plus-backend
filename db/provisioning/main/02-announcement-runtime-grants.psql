@@ -1,0 +1,22 @@
+-- PREPARED ONLY. Requires separate MAIN Campus+ V007/grant approval.
+\set ON_ERROR_STOP on
+BEGIN;
+SET LOCAL lock_timeout='5s';
+SET LOCAL statement_timeout='10s';
+DO $$ BEGIN
+    IF current_database()<>'campus_plus' OR current_user<>'cem'
+       OR host(inet_server_addr()) IS DISTINCT FROM '127.0.0.1' OR inet_server_port() IS DISTINCT FROM 5434
+       OR current_setting('server_version_num')::int NOT BETWEEN 170000 AND 179999 THEN
+        RAISE EXCEPTION 'Unauthorized main grant target';
+    END IF;
+    IF NOT EXISTS(SELECT FROM public.flyway_schema_history WHERE version IN ('7','007') AND type='SQL' AND success) THEN
+        RAISE EXCEPTION 'Successful main V007 migration required';
+    END IF;
+    IF EXISTS(SELECT FROM pg_roles WHERE rolname='campus_plus_user'
+        AND (rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication OR rolbypassrls)) THEN
+        RAISE EXCEPTION 'Application must remain a limited role';
+    END IF;
+END $$;
+GRANT SELECT,INSERT,UPDATE,DELETE ON public.club_announcements TO campus_plus_user;
+GRANT USAGE,SELECT ON SEQUENCE public.club_announcements_id_seq TO campus_plus_user;
+COMMIT;

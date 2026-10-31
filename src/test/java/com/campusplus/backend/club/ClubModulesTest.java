@@ -73,12 +73,20 @@ class ClubModulesTest {
             ClubService.class,ClubQueryService.class,ClubMembershipService.class,ClubSettings.class,
             ClubController.class,ClubMembershipController.class,GlobalExceptionHandler.class,StudentProfilePolicy.class})
     static class Config {
+        @Bean com.campusplus.backend.service.notification.NotificationWriter notificationWriter(){return mock(com.campusplus.backend.service.notification.NotificationWriter.class);}
         @Bean UserRepository users() { return mock(UserRepository.class); }
         @Bean ClubRepository clubs() { return mock(ClubRepository.class); }
         @Bean ClubMembershipRepository members() { return mock(ClubMembershipRepository.class); }
         @Bean StudentProfileRepository profiles() { return mock(StudentProfileRepository.class); }
         @Bean UniversityRepository universities() { return mock(UniversityRepository.class); }
         @Bean EntityManager entityManager() { return mock(EntityManager.class); }
+        @Bean com.campusplus.backend.service.event.EventLifecycleService eventLifecycle() {
+            return mock(com.campusplus.backend.service.event.EventLifecycleService.class);
+        }
+        @Bean EventParticipationRepository eventParticipations() { return mock(EventParticipationRepository.class); }
+        @Bean com.campusplus.backend.service.announcement.AnnouncementLifecycleService announcementLifecycle() {
+            return mock(com.campusplus.backend.service.announcement.AnnouncementLifecycleService.class);
+        }
         @Bean @Primary Clock clock() { return Clock.fixed(NOW,ZoneOffset.UTC); }
         @Bean static MethodValidationPostProcessor validation() {
             var p=new MethodValidationPostProcessor(); p.setProxyTargetClass(true); return p;
@@ -345,7 +353,7 @@ class ClubModulesTest {
         assertEquals(1,roster.values().stream().filter(m -> m.getClub().getId()==10&&m.getRole()==OWNER&&m.getStatus()==ACTIVE).count());
         var locks=inOrder(users,clubs);locks.verify(users).findByIdForUpdate(2L);locks.verify(users).findByIdForUpdate(4L);locks.verify(clubs).findByIdForUpdate(10L);
         var saves=inOrder(members);saves.verify(members).saveAndFlush(roster.get(100L));saves.verify(members).saveAndFlush(roster.get(102L));
-        verify(em).refresh(people.get(2L),LockModeType.PESSIMISTIC_WRITE);
+        verify(em).refresh(people.get(2L));
         action("/api/clubs/10/membership/leave",2,1,null).andExpect(status().isOk());
     }
     @ParameterizedTest @ValueSource(longs={100,103,200})
@@ -424,7 +432,7 @@ class ClubModulesTest {
     }
     @Test void roleRevokedWhileWaitingForLockCannotBeUsedByTheSameRequest() throws Exception {
         doAnswer(i -> { people.get(3L).revokeRole(Role.CLUB_ADMIN); return null; }).when(em)
-                .refresh(people.get(3L),LockModeType.PESSIMISTIC_WRITE);
+                .refresh(people.get(3L));
         action("/api/clubs/10/memberships/103/approve",3,0,null).andExpect(status().isForbidden());
         assertEquals(PENDING,roster.get(103L).getStatus());verify(members,never()).saveAndFlush(any());
     }
@@ -465,4 +473,21 @@ class ClubModulesTest {
         mvc.perform(post("/api/clubs").header("Authorization",token(4)).contentType(MediaType.APPLICATION_JSON)
                 .content(body("name","Club","slug","new-club","description","Description"))).andExpect(status().isConflict());
     }
+    @Test void clubApprovalAndMembershipDecisionsNotifyOnlyAfterSourceSave()throws Exception {
+        var writer=context.getBean(com.campusplus.backend.service.notification.NotificationWriter.class);clearInvocations(writer);
+        field(catalog.get(10L),"status",ClubStatus.PENDING_APPROVAL);
+        action("/api/admin/clubs/10/approve",5,0,null).andExpect(status().isOk());
+        var order=inOrder(clubs,writer);order.verify(clubs).saveAndFlush(catalog.get(10L));
+        order.verify(writer).clubChanged(catalog.get(10L),people.get(5L),NotificationType.CLUB_APPROVED);
+        action("/api/clubs/10/memberships/103/approve",3,0,null).andExpect(status().isOk());
+        verify(writer).membershipChanged(roster.get(103L),people.get(3L),NotificationType.MEMBERSHIP_APPROVED);
+    }
+    @Test void ownershipTransferNotifiesBothAffectedMemberships()throws Exception {
+        var writer=context.getBean(com.campusplus.backend.service.notification.NotificationWriter.class);clearInvocations(writer);
+        mvc.perform(post("/api/clubs/10/ownership-transfer").header("Authorization",token(2)).contentType(MediaType.APPLICATION_JSON)
+            .content(body("targetMembershipId",102,"clubVersion",0,"ownerMembershipVersion",0,"targetMembershipVersion",0))).andExpect(status().isOk());
+        verify(writer).membershipChanged(roster.get(100L),people.get(2L),NotificationType.MEMBERSHIP_OWNERSHIP_TRANSFERRED);
+        verify(writer).membershipChanged(roster.get(102L),people.get(2L),NotificationType.MEMBERSHIP_OWNERSHIP_TRANSFERRED);verifyNoMoreInteractions(writer);
+    }
+
 }

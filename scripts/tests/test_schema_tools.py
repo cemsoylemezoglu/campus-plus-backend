@@ -1,8 +1,10 @@
 import copy
 import importlib.util
 import json
+import hashlib
 from pathlib import Path
 import subprocess
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -65,7 +67,8 @@ class SchemaToolsTest(unittest.TestCase):
 
     def test_read_only_session_and_nonleaking_process_arguments(self):
         report = dict(self.contract, identity=self.identity)
-        self.env.update(PGOPTIONS='-c default_transaction_read_only=off', PGSERVICE='wrong-service')
+        self.env.update(PGOPTIONS='-c default_transaction_read_only=off', PGSERVICE='wrong-service',
+                        PGHOSTADDR='192.0.2.9', PGDATABASE='wrong-target')
         responses = [subprocess.CompletedProcess([], 0, json.dumps(x), '') for x in (self.identity, report)]
         with patch.object(tools.subprocess, 'run', side_effect=responses) as run:
             self.assertEqual(tools.inspect(self.env, 'existing', 'psql'), report)
@@ -73,8 +76,12 @@ class SchemaToolsTest(unittest.TestCase):
                 self.assertNotIn('fixture-canary', ' '.join(call.args[0]))
                 self.assertIn('default_transaction_read_only=on', call.kwargs['env']['PGOPTIONS'])
                 self.assertNotIn('PGSERVICE', call.kwargs['env'])
+                self.assertNotIn('PGHOSTADDR', call.kwargs['env'])
+                self.assertNotIn('PGDATABASE', call.kwargs['env'])
+                self.assertEqual(call.kwargs['env']['PGPASSFILE'], '/dev/null')
                 self.assertEqual(call.kwargs['env']['PGPASSWORD'], 'fixture-canary')
             self.assertIn('REPEATABLE READ READ ONLY', run.call_args_list[1].kwargs['input'])
+            self.assertEqual(self.env['PGHOSTADDR'], '192.0.2.9')
 
     def test_wrong_actual_identity_prevents_catalogue_read(self):
         for change in ({'database': 'other_project'}, {'address': '127.0.0.2'}, {'port': 5432},
@@ -118,6 +125,108 @@ class SchemaToolsTest(unittest.TestCase):
 
     def test_historical_sql_checksums_match_reviewed_manifest(self):
         tools.verify_files()
+
+    def managed_fixture(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        root = Path(temporary.name)
+        directory = root / 'db/managed-migrations'
+        directory.mkdir(parents=True)
+        path = directory / 'V006__reviewed.sql'
+        path.write_text('-- reviewed SQL fixture; never executed\n')
+        contract = {'migrationChecksums': {path.name: hashlib.sha256(path.read_bytes()).hexdigest()}}
+        return root, path, contract
+
+    def test_reviewed_managed_migration_bytes_match_the_contract(self):
+        root, path, contract = self.managed_fixture()
+        tools.verify_managed_checksums(contract, root)
+
+    def test_editing_a_reviewed_managed_migration_is_rejected(self):
+        root, path, contract = self.managed_fixture()
+        path.write_text('-- modified fixture\n')
+        with self.assertRaises(ValueError):
+            tools.verify_managed_checksums(contract, root)
+
+    def test_missing_or_extra_managed_migration_requires_a_new_review(self):
+        root, path, contract = self.managed_fixture()
+        extra = path.parent / 'V007__unreviewed.sql'
+        extra.write_text('-- fixture\n')
+        with self.assertRaises(ValueError):
+            tools.verify_managed_checksums(contract, root)
+        extra.unlink()
+        path.unlink()
+        with self.assertRaises(ValueError):
+            tools.verify_managed_checksums(contract, root)
+
+    def test_manifest_paths_cannot_escape_the_managed_migration_directory(self):
+        root, path, contract = self.managed_fixture()
+        contract['migrationChecksums'] = {'../outside.sql': 'unused'}
+        with self.assertRaises(ValueError):
+            tools.verify_managed_checksums(contract, root)
+
+    def test_original_v005_contract_remains_supported_without_new_checksum_metadata(self):
+        tools.verify_managed_checksums(self.contract)
+
+    def test_v006_inspection_requires_explicit_version_and_exact_eight_tables(self):
+        report = copy.deepcopy(dict(self.contract, identity=self.identity))
+        report['schema']['tables'].extend([{'name': 'events'}, {'name': 'event_participations'}])
+        with patch.object(tools, 'read_document', return_value=report):
+            with self.assertRaises(RuntimeError):
+                tools.inspect(self.env, 'existing', 'psql')
+            self.assertEqual(tools.inspect(self.env, 'existing', 'psql', 6), report)
+
+    def test_v006_inspection_does_not_accept_missing_or_unrelated_tables(self):
+        for names in (['events'], ['events', 'event_participations', 'unexpected']):
+            report = copy.deepcopy(dict(self.contract, identity=self.identity))
+            report['schema']['tables'].extend({'name': name} for name in names)
+            with patch.object(tools, 'read_document', return_value=report), self.assertRaises(RuntimeError):
+                tools.inspect(self.env, 'existing', 'psql', 6)
+
+    def test_v007_requires_explicit_version_and_exact_nine_table_set(self):
+        report = copy.deepcopy(self.contract)
+        report['schema']['tables'].extend({'name': name} for name in ('events', 'event_participations', 'club_announcements'))
+        with patch.object(tools, 'read_document', return_value=report):
+            self.assertEqual(tools.inspect(self.env, 'existing', 'psql', 7), report)
+            for version in (5, 6):
+                with self.assertRaises(RuntimeError):
+                    tools.inspect(self.env, 'existing', 'psql', version)
+
+    def test_v007_rejects_missing_event_or_additional_unrelated_table(self):
+        for names in (('events', 'club_announcements'), ('events', 'event_participations', 'club_announcements', 'unexpected')):
+            report = copy.deepcopy(self.contract)
+            report['schema']['tables'].extend({'name': name} for name in names)
+            with patch.object(tools, 'read_document', return_value=report):
+                with self.assertRaises(RuntimeError):
+                    tools.inspect(self.env, 'existing', 'psql', 7)
+
+    def test_v008_requires_explicit_version_and_exact_ten_tables(self):
+        report = copy.deepcopy(self.contract)
+        report['schema']['tables'].extend({'name': name} for name in ('events', 'event_participations', 'club_announcements', 'notifications'))
+        with patch.object(tools, 'read_document', return_value=report):
+            self.assertEqual(tools.inspect(self.env, 'existing', 'psql', 8), report)
+            for version in (5, 6, 7):
+                with self.assertRaises(RuntimeError):
+                    tools.inspect(self.env, 'existing', 'psql', version)
+
+    def test_v008_rejects_missing_source_or_unrelated_extra_table(self):
+        for names in (('events', 'event_participations', 'notifications'), ('events', 'event_participations', 'club_announcements', 'notifications', 'unexpected')):
+            report = copy.deepcopy(self.contract)
+            report['schema']['tables'].extend({'name': name} for name in names)
+            with patch.object(tools, 'read_document', return_value=report):
+                with self.assertRaises(RuntimeError):
+                    tools.inspect(self.env, 'existing', 'psql', 8)
+
+    def test_unknown_schema_version_never_connects(self):
+        with patch.object(tools, 'read_document') as read:
+            with self.assertRaises(ValueError):
+                tools.inspect(self.env, 'existing', 'psql', 9)
+            read.assert_not_called()
+
+    def test_v006_table_allowlist_does_not_weaken_structural_v005_comparison(self):
+        actual = copy.deepcopy(self.contract)
+        actual['schema']['tables'].extend([{'name': 'events', 'constraints': []}, {'name': 'event_participations', 'constraints': []}])
+        with self.assertRaises(ValueError):
+            tools.compare(self.contract, actual)
 
     def test_encoding_or_database_collation_drift_blocks_adoption(self):
         actual = copy.deepcopy(self.contract)

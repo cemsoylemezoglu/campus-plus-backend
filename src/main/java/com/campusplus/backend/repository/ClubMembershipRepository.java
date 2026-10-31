@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 public interface ClubMembershipRepository extends JpaRepository<ClubMembership, Long> {
+    @EntityGraph(attributePaths="club")
+    List<ClubMembership> findByClubIdInAndUserId(Collection<Long> clubIds,Long userId);
     Optional<ClubMembership> findByClubIdAndUserId(Long clubId, Long userId);
     Optional<ClubMembership> findByIdAndClubId(Long id, Long clubId);
     long countByClubIdAndStatus(Long clubId, ClubMembershipStatus status);

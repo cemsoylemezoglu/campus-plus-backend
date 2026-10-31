@@ -2,7 +2,9 @@ package com.campusplus.backend.service.club;
 
 import com.campusplus.backend.dto.club.*;
 import com.campusplus.backend.entity.*;
+import com.campusplus.backend.service.notification.NotificationWriter;
 import com.campusplus.backend.exception.*;
+import com.campusplus.backend.service.event.EventLifecycleService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import java.util.*;
@@ -17,7 +19,9 @@ import static com.campusplus.backend.entity.ClubMembershipStatus.*;
 public class ClubMembershipService {
     private final ClubWorkspace w;
     private final ClubSettings settings;
-    public ClubMembershipService(ClubWorkspace w,ClubSettings settings) { this.w=w; this.settings=settings; }
+    private final EventLifecycleService events;
+    private final NotificationWriter notifications;
+    public ClubMembershipService(ClubWorkspace w,ClubSettings settings,EventLifecycleService events,NotificationWriter notifications) { this.w=w; this.settings=settings;this.events=events;this.notifications=notifications; }
     public MyMembershipResponse apply(@Positive Long clubId,@Valid MembershipApplyRequest request) {
         var ctx=w.lock(clubId,List.of()); Club c=ctx.club(); w.policy.requireActive(c);
         StudentProfile profile=w.eligible(ctx.actor().getId(),c);
@@ -32,7 +36,8 @@ public class ClubMembershipService {
                 throw new ResourceConflictException("Tekrar başvuru için bekleme süresi dolmadı.");
             m.requestAgain(w.clock.instant());
         }
-        return own(w.memberships.saveAndFlush(m));
+        w.memberships.saveAndFlush(m);notifications.membershipChanged(m,ctx.actor(),NotificationType.MEMBERSHIP_REQUESTED);
+        return own(m);
     }
     public MyMembershipResponse cancel(@Positive Long clubId,@Valid MembershipDecisionRequest request) {
         var ctx=w.lock(clubId,List.of()); var m=w.self(ctx.club());
@@ -45,7 +50,8 @@ public class ClubMembershipService {
         ClubWorkspace.version(m.getVersion(),request.version());
         if(m.getStatus()!=ACTIVE && m.getStatus()!=SUSPENDED) throw new ResourceConflictException("Ayrılabileceğiniz üyelik bulunamadı.");
         w.membershipPolicy.protectOwner(ctx.club(),m);
-        m.transition(LEFT,ctx.actor(),null,w.clock.instant()); w.memberships.saveAndFlush(m); w.syncRole(ctx.actor());
+        m.transition(LEFT,ctx.actor(),null,w.clock.instant()); w.memberships.saveAndFlush(m);
+        events.membershipEnded(ctx.club(),m.getUserId(),ctx.actor(),w.clock.instant());w.syncRole(ctx.actor());
         return own(m);
     }
     public enum Decision { APPROVE, REJECT, REMOVE, ALLOW_REAPPLICATION, SUSPEND, RESTORE }
@@ -72,7 +78,12 @@ public class ClubMembershipService {
             case SUSPEND -> { require(m,ACTIVE); w.membershipPolicy.protectOwner(c,m); m.transition(SUSPENDED,ctx.actor(),ClubWorkspace.reason(request.reason()),w.clock.instant()); }
             case RESTORE -> { require(m,SUSPENDED); w.eligible(m.getUserId(),c); m.transition(ACTIVE,ctx.actor(),request.reason(),w.clock.instant()); }
         }
-        w.memberships.saveAndFlush(m); w.syncRole(ctx.users().get(m.getUserId())); return managed(m,ctx.users().get(m.getUserId()));
+        w.memberships.saveAndFlush(m);
+        if(action==Decision.REMOVE || action==Decision.SUSPEND)
+            events.membershipEnded(c,m.getUserId(),ctx.actor(),w.clock.instant());
+        w.syncRole(ctx.users().get(m.getUserId()));
+        NotificationType type=switch(action){case APPROVE -> NotificationType.MEMBERSHIP_APPROVED;case REJECT -> NotificationType.MEMBERSHIP_REJECTED;case REMOVE -> NotificationType.MEMBERSHIP_REMOVED;case ALLOW_REAPPLICATION -> NotificationType.MEMBERSHIP_REAPPLICATION_ALLOWED;case SUSPEND -> NotificationType.MEMBERSHIP_SUSPENDED;case RESTORE -> NotificationType.MEMBERSHIP_RESTORED;};
+        notifications.membershipChanged(m,ctx.actor(),type);return managed(m,ctx.users().get(m.getUserId()));
     }
     public ManagedMembershipResponse role(@Positive Long clubId,@Positive Long memberId,@Valid ChangeMembershipRoleRequest request) {
         w.preflightManagement(clubId,true);
@@ -86,6 +97,7 @@ public class ClubMembershipService {
         // Removing a privilege must remain possible when the university is inactive.
         if(request.role()==MANAGER) w.eligible(m.getUserId(),c);
         m.changeRole(request.role(),w.clock.instant()); w.memberships.saveAndFlush(m); w.syncRole(ctx.users().get(m.getUserId()));
+        notifications.membershipChanged(m,ctx.actor(),NotificationType.MEMBERSHIP_ROLE_CHANGED);
         return managed(m,ctx.users().get(m.getUserId()));
     }
     public ClubResponse transfer(@Positive Long clubId,@Valid TransferOwnershipRequest request) {
@@ -106,6 +118,8 @@ public class ClubMembershipService {
         w.memberships.saveAndFlush(owner); // Downgrade first; partial unique OWNER index remains satisfied.
         target.changeRole(OWNER,w.clock.instant()); w.memberships.saveAndFlush(target);
         w.syncRole(ctx.users().get(owner.getUserId())); w.syncRole(ctx.users().get(target.getUserId()));
+        notifications.membershipChanged(owner,ctx.actor(),NotificationType.MEMBERSHIP_OWNERSHIP_TRANSFERRED);
+        notifications.membershipChanged(target,ctx.actor(),NotificationType.MEMBERSHIP_OWNERSHIP_TRANSFERRED);
         return ClubResponse.from(c,w.count(c));
     }
     private void require(ClubMembership m,ClubMembershipStatus status) {

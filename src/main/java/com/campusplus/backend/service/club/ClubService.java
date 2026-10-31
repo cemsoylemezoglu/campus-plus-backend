@@ -2,7 +2,9 @@ package com.campusplus.backend.service.club;
 
 import com.campusplus.backend.dto.club.*;
 import com.campusplus.backend.entity.*;
+import com.campusplus.backend.service.notification.NotificationWriter;
 import com.campusplus.backend.exception.*;
+import com.campusplus.backend.service.event.EventLifecycleService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import java.util.*;
@@ -14,7 +16,13 @@ import org.springframework.validation.annotation.Validated;
 @Service @Validated @Transactional @PreAuthorize("isAuthenticated()")
 public class ClubService {
     private final ClubWorkspace w;
-    public ClubService(ClubWorkspace w) { this.w=w; }
+    private final EventLifecycleService events;
+    private final NotificationWriter notifications;
+    private final com.campusplus.backend.service.announcement.AnnouncementLifecycleService announcements;
+    public ClubService(ClubWorkspace w,EventLifecycleService events,
+            com.campusplus.backend.service.announcement.AnnouncementLifecycleService announcements,NotificationWriter notifications) {
+        this.w=w;this.events=events;this.announcements=announcements;this.notifications=notifications;
+    }
     public ClubResponse create(@Valid CreateClubRequest request) {
         User creator=w.lockUser(w.current.userId());
         if(!creator.getRoles().contains(Role.STUDENT)) w.policy.deny();
@@ -61,7 +69,10 @@ public class ClubService {
         if(c.getStatus()!=from) throw new ResourceConflictException("Bu durum geçişi yapılamaz.");
         if(w.memberships.activeOwner(c.getId()).isEmpty()) throw new ResourceConflictException("Aktif kulüp sahibi olmadan geçiş yapılamaz.");
         String note=reasonRequired?ClubWorkspace.reason(request.reason()):request.reason();
-        c.transition(to,actor,note,w.clock.instant()); return response(w.clubs.saveAndFlush(c));
+        c.transition(to,actor,note,w.clock.instant());w.clubs.saveAndFlush(c);
+        NotificationType type=switch(to){case ACTIVE -> from==ClubStatus.PENDING_APPROVAL?NotificationType.CLUB_APPROVED:NotificationType.CLUB_RESTORED;case REJECTED -> NotificationType.CLUB_REJECTED;case SUSPENDED -> NotificationType.CLUB_SUSPENDED;default -> null;};
+        if(type!=null)notifications.clubChanged(c,actor,type);
+        return response(c);
     }
     public ClubResponse archive(@Positive Long id,@Valid ClubActionRequest request) {
         w.preflightManagement(id,true);
@@ -72,6 +83,9 @@ public class ClubService {
         if(c.getStatus()==ClubStatus.ARCHIVED) throw new ResourceConflictException("Kulüp zaten arşivlenmiş.");
         if(!ids.equals(new TreeSet<>(w.memberships.activeManagerUserIds(id)))) throw new ResourceConflictException("Yönetici listesi değişti; tekrar deneyiniz.");
         c.transition(ClubStatus.ARCHIVED,ctx.actor(),request.reason(),w.clock.instant()); w.clubs.saveAndFlush(c);
+        notifications.clubChanged(c,ctx.actor(),NotificationType.CLUB_ARCHIVED);
+        events.clubArchived(c,ctx.actor(),w.clock.instant());
+        announcements.clubArchived(c,ctx.actor(),w.clock.instant());
         for(Long userId:ids) w.syncRole(ctx.users().get(userId));
         return response(c);
     }

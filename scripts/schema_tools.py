@@ -6,11 +6,18 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parent.parent
 TABLES = {'users', 'user_roles', 'universities', 'student_profiles', 'clubs', 'club_memberships'}
+TABLES_BY_VERSION = {
+    5: frozenset(TABLES),
+    6: frozenset(TABLES | {'events', 'event_participations'}),
+    7: frozenset(TABLES | {'events', 'event_participations', 'club_announcements'}),
+    8: frozenset(TABLES | {'events', 'event_participations', 'club_announcements', 'notifications'}),
+}
 
 # Manually reviewed on PostgreSQL 17.11 during the first empty V005 installation.
 # Re-parsing pg_get_constraintdef can push an array-wide text cast into each literal.
@@ -73,9 +80,13 @@ def configuration(environment, target):
 def read_document(environment, target, psql, sql_file):
     database, username, password = configuration(environment, target)
     env = dict(environment)
-    for key in ('PGSERVICE', 'PGSERVICEFILE', 'PGOPTIONS'):
-        env.pop(key, None)
+    # In particular PGHOSTADDR can override routing even with an explicit -h host.
+    # Sanitize this child process only; preserve the caller's environment.
+    for key in list(env):
+        if key.startswith('PG'):
+            env.pop(key)
     env.update(PGPASSWORD=password, PGCONNECT_TIMEOUT='5',
+               PGPASSFILE='/dev/null',
                PGOPTIONS='-c default_transaction_read_only=on -c statement_timeout=10000 -c lock_timeout=3000')
     args = [psql, '-X', '-w', '-q', '-A', '-t', '-h', '127.0.0.1', '-p', '5434',
             '-U', username, '-d', database, '-v', 'ON_ERROR_STOP=1']
@@ -97,10 +108,12 @@ def read_document(environment, target, psql, sql_file):
     return inventory
 
 
-def inspect(environment, target, psql):
+def inspect(environment, target, psql, schema_version=5):
+    if schema_version not in TABLES_BY_VERSION:
+        raise ValueError('Only explicitly reviewed Campus+ schema versions can be inspected.')
     inventory = read_document(environment, target, psql, 'db/verification/schema_inventory.sql')
-    if {table['name'] for table in inventory['schema']['tables']} != TABLES:
-        raise RuntimeError('Unexpected public tables; inspect schema before any baseline operation.')
+    if {table['name'] for table in inventory['schema']['tables']} != TABLES_BY_VERSION[schema_version]:
+        raise RuntimeError('Unexpected public tables for the reviewed schema version; inspect before any migration operation.')
     return inventory
 
 
@@ -112,6 +125,20 @@ def verify_files(root=ROOT):
     for name, expected in manifest.items():
         if hashlib.sha256((root / 'db/migrations' / name).read_bytes()).hexdigest() != expected:
             raise ValueError('Historical migration checksum mismatch; do not repair or reapply.')
+
+
+def verify_managed_checksums(contract, root=ROOT):
+    expected = contract.get('migrationChecksums')
+    if expected is None:
+        return  # Original V005 contract predates the versioned SQL checksum metadata.
+    if not expected or any(not re.fullmatch(r'V[0-9]+__[A-Za-z0-9_]+\.sql', name) for name in expected):
+        raise ValueError('Invalid managed migration checksum manifest.')
+    directory = root / 'db/managed-migrations'
+    if {path.name for path in directory.glob('*.sql')} != set(expected):
+        raise ValueError('Managed SQL migration set differs from the reviewed contract.')
+    for name, digest in expected.items():
+        if hashlib.sha256((directory / name).read_bytes()).hexdigest() != digest:
+            raise ValueError('Managed SQL checksum mismatch; do not edit an applied migration.')
 
 
 def validate_identity(identity, database):
@@ -126,7 +153,7 @@ def compare(expected, actual):
     # Constraint names/definitions, FK actions, defaults, identities and index predicates are compared.
     if (comparison_schema(expected['schema']) != comparison_schema(actual['schema'])
             or expected.get('databaseEnvironment') != actual.get('databaseEnvironment')):
-        raise ValueError('Schema does not match the reviewed V005 contract; baseline must not proceed.')
+        raise ValueError('Schema does not match the reviewed contract; migration adoption must not proceed.')
 
 
 def main():
@@ -134,6 +161,8 @@ def main():
     commands = parser.add_subparsers(dest='command', required=True)
     inventory = commands.add_parser('inspect')
     inventory.add_argument('--target', choices=('existing', 'test'), required=True)
+    inventory.add_argument('--schema-version', type=int, choices=(5, 6, 7, 8), default=5,
+                           help='Expected table set only; structural contract comparison is still required.')
     inventory.add_argument('--psql', default='psql')
     inventory.add_argument('--output', type=Path, required=True)
     comparison = commands.add_parser('compare')
@@ -147,7 +176,7 @@ def main():
     args = parser.parse_args()
     if args.command in ('inspect', 'fingerprints'):
         if args.command == 'inspect':
-            data = inspect(os.environ, args.target, args.psql)
+            data = inspect(os.environ, args.target, args.psql, args.schema_version)
         else:
             data = read_document(os.environ, args.target, args.psql, 'db/verification/data_fingerprints.sql')
         # Do not overwrite an earlier inspection unnoticed.
@@ -157,8 +186,10 @@ def main():
             output.write('\n')
         print('Read-only Campus+ report written; no database changes.')
     elif args.command == 'compare':
-        compare(json.loads(args.expected.read_text()), json.loads(args.actual.read_text()))
-        print('Schema matches reviewed V005 contract.')
+        expected = json.loads(args.expected.read_text())
+        verify_managed_checksums(expected)
+        compare(expected, json.loads(args.actual.read_text()))
+        print('Schema matches reviewed contract.')
     else:
         verify_files()
         print('Historical V001-V005 migration checksums unchanged.')

@@ -40,7 +40,8 @@ public class ClubWorkspace {
     public User lockUser(Long id) {
         User user=users.findByIdForUpdate(id).orElseThrow(() -> new ResourceNotFoundException("Kullanıcı bulunamadı."));
         // A lock alone need not refresh an already-managed entity (e.g. OSIV after JWT conversion).
-        entityManager.refresh(user, LockModeType.PESSIMISTIC_WRITE);
+        // The native repository query holds NO KEY UPDATE until commit; do not upgrade it to FOR UPDATE.
+        entityManager.refresh(user);
         return user;
     }
     public Locked lock(Long clubId, Collection<Long> affected) {

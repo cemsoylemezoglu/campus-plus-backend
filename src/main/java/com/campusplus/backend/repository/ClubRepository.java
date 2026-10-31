@@ -12,6 +12,8 @@ public interface ClubRepository extends JpaRepository<Club, Long> {
     @Override @EntityGraph(attributePaths="university") Optional<Club> findById(Long id);
     @Lock(LockModeType.PESSIMISTIC_WRITE) @Query("select c from Club c where c.id=:id")
     Optional<Club> findByIdForUpdate(@Param("id") Long id);
+    @Lock(LockModeType.PESSIMISTIC_READ) @Query("select c from Club c where c.id=:id")
+    Optional<Club> findByIdForShare(@Param("id") Long id);
     @EntityGraph(attributePaths="university")
     @Query("select c from Club c where (:universityId is null or c.university.id=:universityId) "
             + "and (:status is null or c.status=:status) and (lower(c.name) like :pattern escape '!' or c.slug like :pattern escape '!')")

@@ -69,6 +69,9 @@ class AcademicModulesTest {
         @Bean UserRepository users() { return mock(UserRepository.class); }
         @Bean UniversityRepository universities() { return mock(UniversityRepository.class); }
         @Bean ClubMembershipRepository memberships() { return mock(ClubMembershipRepository.class); }
+        @Bean com.campusplus.backend.repository.EventParticipationRepository eventParticipations() {
+            return mock(com.campusplus.backend.repository.EventParticipationRepository.class);
+        }
         @Bean StudentProfileRepository profiles() { return mock(StudentProfileRepository.class); }
         @Bean @Primary Clock clock() { return Clock.fixed(NOW, ZoneOffset.UTC); }
         @Bean static MethodValidationPostProcessor methodValidation() {

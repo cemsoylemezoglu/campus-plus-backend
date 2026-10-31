@@ -33,6 +33,8 @@ class AcademicMappingsTest {
         factory = new MetadataSources(registry).addAnnotatedClass(User.class)
                 .addAnnotatedClass(University.class).addAnnotatedClass(StudentProfile.class)
                 .addAnnotatedClass(Club.class).addAnnotatedClass(ClubMembership.class)
+                .addAnnotatedClass(Event.class).addAnnotatedClass(EventParticipation.class)
+                .addAnnotatedClass(Announcement.class).addAnnotatedClass(Notification.class)
                 .buildMetadata().buildSessionFactory();
     }
     @AfterAll
@@ -43,12 +45,14 @@ class AcademicMappingsTest {
     @Test
     void repositoryHqlCompilesAgainstRealEntityMetadataWithoutConnecting() {
         try (var session = factory.openSession()) {
-            for (Class<?> type : new Class<?>[]{UniversityRepository.class, UserRepository.class, ClubRepository.class, ClubMembershipRepository.class}) {
+            for (Class<?> type : new Class<?>[]{UniversityRepository.class, UserRepository.class, ClubRepository.class, ClubMembershipRepository.class,
+                    EventRepository.class,EventParticipationRepository.class,AnnouncementRepository.class,NotificationRepository.class}) {
                 for (var method : type.getDeclaredMethods()) {
                     Query annotation = method.getAnnotation(Query.class);
-                    if (annotation != null) {
+                    if (annotation != null && !annotation.nativeQuery()) {
                         // Projection, count and entity queries intentionally have different result types.
-                        assertDoesNotThrow(() -> session.createQuery(annotation.value()));
+                        if(annotation.value().startsWith("update ")) assertDoesNotThrow(() -> session.createMutationQuery(annotation.value()));
+                        else assertDoesNotThrow(() -> session.createQuery(annotation.value()));
                     }
                 }
             }
