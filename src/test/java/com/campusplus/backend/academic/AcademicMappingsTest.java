@@ -35,6 +35,7 @@ class AcademicMappingsTest {
                 .addAnnotatedClass(Club.class).addAnnotatedClass(ClubMembership.class)
                 .addAnnotatedClass(Event.class).addAnnotatedClass(EventParticipation.class)
                 .addAnnotatedClass(Announcement.class).addAnnotatedClass(Notification.class)
+                .addAnnotatedClass(Post.class).addAnnotatedClass(PostModeration.class)
                 .buildMetadata().buildSessionFactory();
     }
     @AfterAll
@@ -46,7 +47,8 @@ class AcademicMappingsTest {
     void repositoryHqlCompilesAgainstRealEntityMetadataWithoutConnecting() {
         try (var session = factory.openSession()) {
             for (Class<?> type : new Class<?>[]{UniversityRepository.class, UserRepository.class, ClubRepository.class, ClubMembershipRepository.class,
-                    EventRepository.class,EventParticipationRepository.class,AnnouncementRepository.class,NotificationRepository.class}) {
+                    EventRepository.class,EventParticipationRepository.class,AnnouncementRepository.class,NotificationRepository.class,
+                    PostRepository.class,PostModerationRepository.class}) {
                 for (var method : type.getDeclaredMethods()) {
                     Query annotation = method.getAnnotation(Query.class);
                     if (annotation != null && !annotation.nativeQuery()) {

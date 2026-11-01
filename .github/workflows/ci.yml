@@ -68,17 +68,18 @@ jobs:
           sudo locale-gen en_US.UTF-8
       - name: Create a private test cluster (no Docker or local databases)
         run: python3 scripts/ci_postgres.py
-      - name: Apply V005 through V008 to the empty test database
+      - name: Apply V005 through V009 to the empty test database
         run: |
           python3 scripts/schema_tools.py verify-legacy
           ./mvnw -B -ntp -Pschema-tools -Dflyway.skip=false flyway:migrate
       - name: Verify complete schema and grant limited runner permissions
         run: |
-          TEST_DB_USERNAME="$MIGRATION_DB_USERNAME" TEST_DB_PASSWORD="$MIGRATION_DB_PASSWORD" python3 scripts/schema_tools.py inspect --target test --schema-version 8 --psql /usr/lib/postgresql/17/bin/psql --output "$RUNNER_TEMP/campus-plus-schema.json"
-          python3 scripts/schema_tools.py compare --expected db/schema/v008-contract.json --actual "$RUNNER_TEMP/campus-plus-schema.json"
+          TEST_DB_USERNAME="$MIGRATION_DB_USERNAME" TEST_DB_PASSWORD="$MIGRATION_DB_PASSWORD" python3 scripts/schema_tools.py inspect --target test --schema-version 9 --psql /usr/lib/postgresql/17/bin/psql --output "$RUNNER_TEMP/campus-plus-schema.json"
+          python3 scripts/schema_tools.py compare --expected db/schema/v009-contract.json --actual "$RUNNER_TEMP/campus-plus-schema.json"
           PGPASSWORD="$MIGRATION_DB_PASSWORD" /usr/lib/postgresql/17/bin/psql -X -w -h 127.0.0.1 -p 5434 -U campus_plus_test_migrator -d campus_plus_test -v ON_ERROR_STOP=1 -f db/provisioning/test/03-runtime-grants.psql
           PGPASSWORD="$MIGRATION_DB_PASSWORD" /usr/lib/postgresql/17/bin/psql -X -w -h 127.0.0.1 -p 5434 -U campus_plus_test_migrator -d campus_plus_test -v ON_ERROR_STOP=1 -f db/provisioning/test/04-event-runtime-grants.psql
           PGPASSWORD="$MIGRATION_DB_PASSWORD" /usr/lib/postgresql/17/bin/psql -X -w -h 127.0.0.1 -p 5434 -U campus_plus_test_migrator -d campus_plus_test -v ON_ERROR_STOP=1 -f db/provisioning/test/05-announcement-runtime-grants.psql
           PGPASSWORD="$MIGRATION_DB_PASSWORD" /usr/lib/postgresql/17/bin/psql -X -w -h 127.0.0.1 -p 5434 -U campus_plus_test_migrator -d campus_plus_test -v ON_ERROR_STOP=1 -f db/provisioning/test/06-notification-runtime-grants.psql
+          PGPASSWORD="$MIGRATION_DB_PASSWORD" /usr/lib/postgresql/17/bin/psql -X -w -h 127.0.0.1 -p 5434 -U campus_plus_test_migrator -d campus_plus_test -v ON_ERROR_STOP=1 -f db/provisioning/test/07-post-runtime-grants.psql
       - name: Run real PostgreSQL HTTP and transaction tests
         run: ./mvnw -B -ntp -Ppostgres-it verify

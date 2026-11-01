@@ -122,7 +122,7 @@
 							<baselineVersion>5</baselineVersion>
 							<baselineDescription>Campus+ reviewed V005 schema</baselineDescription>
 							<!-- Migration execution stays opt-in; each database target requires explicit approval. -->
-							<target>8</target>
+							<target>9</target>
 							<outOfOrder>false</outOfOrder>
 							<validateOnMigrate>true</validateOnMigrate>
 							<validateMigrationNaming>true</validateMigrationNaming>

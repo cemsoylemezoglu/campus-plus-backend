@@ -67,6 +67,7 @@ class EventModulesTest {
         @Bean UniversityRepository universities(){return mock(UniversityRepository.class);}
         @Bean EventRepository events(){return mock(EventRepository.class);}
         @Bean EventParticipationRepository participants(){return mock(EventParticipationRepository.class);}
+        @Bean com.campusplus.backend.service.post.PostLifecycleService postLifecycle(){return mock(com.campusplus.backend.service.post.PostLifecycleService.class);}
         @Bean com.campusplus.backend.service.announcement.AnnouncementLifecycleService announcementLifecycle() {
             return mock(com.campusplus.backend.service.announcement.AnnouncementLifecycleService.class);
         }

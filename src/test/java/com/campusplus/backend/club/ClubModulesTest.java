@@ -84,6 +84,7 @@ class ClubModulesTest {
             return mock(com.campusplus.backend.service.event.EventLifecycleService.class);
         }
         @Bean EventParticipationRepository eventParticipations() { return mock(EventParticipationRepository.class); }
+        @Bean com.campusplus.backend.service.post.PostLifecycleService postLifecycle(){return mock(com.campusplus.backend.service.post.PostLifecycleService.class);}
         @Bean com.campusplus.backend.service.announcement.AnnouncementLifecycleService announcementLifecycle() {
             return mock(com.campusplus.backend.service.announcement.AnnouncementLifecycleService.class);
         }

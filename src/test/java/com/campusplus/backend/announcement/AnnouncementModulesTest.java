@@ -52,6 +52,7 @@ class AnnouncementModulesTest {
         EventPolicy.class,AnnouncementPolicy.class,AnnouncementWorkspace.class,AnnouncementService.class,
         AnnouncementQueryService.class,AnnouncementLifecycleService.class,AnnouncementController.class,GlobalExceptionHandler.class})
     static class Config {
+        @Bean com.campusplus.backend.service.post.PostLifecycleService postLifecycle(){return mock(com.campusplus.backend.service.post.PostLifecycleService.class);}
         @Bean com.campusplus.backend.service.notification.NotificationWriter notificationWriter(){return mock(com.campusplus.backend.service.notification.NotificationWriter.class);}
         @Bean UserRepository users(){return mock(UserRepository.class);}
         @Bean ClubRepository clubs(){return mock(ClubRepository.class);}

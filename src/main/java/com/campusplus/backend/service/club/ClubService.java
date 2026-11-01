@@ -19,9 +19,11 @@ public class ClubService {
     private final EventLifecycleService events;
     private final NotificationWriter notifications;
     private final com.campusplus.backend.service.announcement.AnnouncementLifecycleService announcements;
+    private final com.campusplus.backend.service.post.PostLifecycleService posts;
     public ClubService(ClubWorkspace w,EventLifecycleService events,
-            com.campusplus.backend.service.announcement.AnnouncementLifecycleService announcements,NotificationWriter notifications) {
-        this.w=w;this.events=events;this.announcements=announcements;this.notifications=notifications;
+            com.campusplus.backend.service.announcement.AnnouncementLifecycleService announcements,NotificationWriter notifications,
+            com.campusplus.backend.service.post.PostLifecycleService posts) {
+        this.w=w;this.events=events;this.announcements=announcements;this.notifications=notifications;this.posts=posts;
     }
     public ClubResponse create(@Valid CreateClubRequest request) {
         User creator=w.lockUser(w.current.userId());
@@ -86,6 +88,7 @@ public class ClubService {
         notifications.clubChanged(c,ctx.actor(),NotificationType.CLUB_ARCHIVED);
         events.clubArchived(c,ctx.actor(),w.clock.instant());
         announcements.clubArchived(c,ctx.actor(),w.clock.instant());
+        posts.clubArchived(c,ctx.actor(),w.clock.instant());
         for(Long userId:ids) w.syncRole(ctx.users().get(userId));
         return response(c);
     }
