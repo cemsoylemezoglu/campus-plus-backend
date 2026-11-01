@@ -1,14 +1,25 @@
 # Campus+
 
 Campus+, üniversite öğrencilerini, öğrenci kulüplerini ve kampüs yaşamını bir araya
-getiren mobil sosyal platformun backend projesidir. Flutter uygulaması planlanmaktadır;
-bu repoda henüz mobil kod yoktur.
+getiren sosyal platformun Spring Boot tabanlı REST API projesidir.
 
-> Geliştirme durumu: uygulama içi bildirimler tamamlandı. V008 ana ve test Campus+
-> veritabanlarında açık onayla uygulandı; 374 Java/36 Python testi ve ana ortamda
-> 32 salt okunur API kontrolü başarılı.
-> [Bildirim ana DB doğrulaması](docs/notification-main-validation.md) ve
-> [otomatik test sonucu](docs/notification-test-validation.md).
+> Geliştirme durumu: Post metin gönderileri, sosyal akış ve moderasyon aşaması tamamlandı.
+> V009 ana ve test Campus+ DB'lerinde ayrı açık onaylarla uygulandı. Aynı kodun
+> 451 Java/38 Python testi ve ana ortamda 49 salt okunur GET kontrolü başarılı.
+> [Ana doğrulama ve mevcut veri sınırları](docs/post-main-validation.md),
+> [otomatik test sonucu](docs/post-test-validation.md).
+
+Tamamlanan son aşama [gönderiler ve kampüs sosyal akışı](docs/social-feed-architecture.md).
+Kod ve V009 SQL'i hazır; **V009 ana ve test DB'de ayrı açık onaylarla uygulandı**.
+[Kod aşaması ve SQL etkileri](docs/post-phase1-review.md).
+
+**Güncel test sonucu: 451 Java (394 izole + 57 PostgreSQL) ve 38 Python başarılı**;
+contextLoads ve 13 yeni Post PG testi dahil. Eski on tablonun kayıt/yetkileri korundu.
+[V009 test DB doğrulaması](docs/post-test-validation.md).
+
+> Ana/test şema V009 ile uyumlu, Hibernate validate korunuyor. Maven/CI hedefi 9;
+> migration varsayılan olarak skip durumundadır. Mevcut ana profillerin üniversiteleri
+> pasif olduğu için normal feed şu an 409 döner; bu kayıtlar değiştirilmedi.
 
 ## Mevcut kapsam
 
@@ -21,6 +32,7 @@ bu repoda henüz mobil kod yoktur.
 - Event yaşam döngüsü, kontenjanlı katılım ve check-in.
 - Duyuru taslak/yayın/düzenleme/geri çekme/arşiv ve güvenli etkinlik bağlantıları.
 - Kişisel bildirim kutusu, okunma durumu ve duyuru/kulüp/üyelik/etkinlik entegrasyonları.
+- Öğrenci/kulüp metin gönderileri, cursor sosyal akışı ve gerekçeli ADMIN moderasyonu.
 
 CLUB_ADMIN tek başına başka kulüpleri yönetme hakkı vermez. Parola/hash yanıt DTO'larına
 konulmaz. Event/EventParticipation; yayın, kontenjan, kayıt/iptal, check-in, sonlandırma
@@ -88,8 +100,8 @@ sınıflarını temizleyin:
 
 Surefire raporları `target/surefire-reports/` altındadır. Normal `test` veya `verify`,
 `postgres-it` profili açılmadıkça gerçek Spring Boot/JDBC context testini çalıştırmaz.
-Bildirim kod aşamasında **330 izole Java testi başarılı**; güncel sonuçlar
-[bildirim raporundadır](docs/notification-phase1-review.md).
+Post kodunda **394 izole Java testi başarılı**; önceki 330 test korunur.
+[Post kod raporu](docs/post-phase1-review.md).
 
 ### PostgreSQL entegrasyon testleri
 
@@ -97,13 +109,13 @@ Bildirim kod aşamasında **330 izole Java testi başarılı**; güncel sonuçla
 ./mvnw -Ppostgres-it verify
 ```
 
-Yerel test DB'sinde V008 ve gerekli grant'ler onayla uygulandı. Başka ortamda
-önce onaylı V008 kurulumu gerekir. Context testi eksik tabloyu görmezden gelmez veya
+Yerel test DB'sinde V009 ve gerekli grant'ler onayla uygulandı. Başka ortamda
+önce onaylı V009 kurulumu gerekir. Context testi eksik tabloyu görmezden gelmez veya
 otomatik oluşturmaz.
 
 Failsafe, korunmuş `contextLoads()` testini `CampusPlusBackendApplicationIT` sınıfında,
 gerçek HTTP/transaction/eşzamanlılık testlerini `PostgresApiIT`, `PostgresEventIT` ve
-`PostgresAnnouncementIT` sınıflarında çalıştırır.
+`PostgresAnnouncementIT`, `PostgresNotificationIT` ve `PostgresPostIT` sınıflarında çalıştırır.
 Test atlanmaz: eksik/yanlış ayarda build güvenli biçimde başarısız olur.
 `TEST_DB_*` olmadan ana `DB_*` değişkenlerine geri düşülmez.
 
@@ -113,9 +125,10 @@ Test atlanmaz: eksik/yanlış ayarda build güvenli biçimde başarısız olur.
 | TEST_DB_USERNAME | `campus_plus_test_runner` — sınırlı test hesabı |
 | TEST_DB_PASSWORD | Bu test hesabının süreç ortamındaki gizli parolası |
 
-Yerel test ortamında onayla V005–V008 uygulanmış, sınırlı runner hesabına yeni
-etkinlik/duyuru/bildirim tabloları için gerekli DML/sequence yetkileri verilmiştir. Başka bir
-ortamda önce onaylı kurulum ve V008 gerekir.
+Yerel test ortamında onayla V005–V009 uygulanmış, sınırlı runner hesabına yeni
+etkinlik/duyuru/bildirim/gönderi tabloları için gerekli DML/sequence yetkileri verilmiştir.
+Post moderasyon audit tablosunda yalnız SELECT/INSERT vardır. Başka bir ortamda
+önce onaylı kurulum ve V009 gerekir.
 Farklı port/sunucu,
 `campus_plus`, URL parametreleri ve alternatif JDBC biçimleri reddedilir. Bağlantı
 kurulduğunda sunucunun adresi, portu, DB adı ve PostgreSQL 17 sürümü ayrıca kontrol edilir.
@@ -130,6 +143,8 @@ Son V005 sürümünde **193 izole + 10 gerçek PostgreSQL testi başarılıydı*
 `contextLoads()` dahil. Kilit ön aşamasında 33 PG testi geçti; son Notification kodunda
 **330 izole + 44 PostgreSQL = 374 Java testi başarılı**, contextLoads dahil.
 [Güncel sonuç](docs/notification-test-validation.md).
+Bu sayı V008 tarihsel sonucudur. V009 Post kodunda **394 izole + 57 PG = 451 Java**
+ve **38 Python** testi geçti; [en güncel sonuç](docs/post-test-validation.md).
 V006 sonuçları ve kapsamı [güncel rapordadır](docs/event-test-validation.md).
 Her HTTP çalıştırması
 benzersiz test kayıtları oluşturur ve yalnız test DB'sinde bırakır; otomatik cleanup yoktur.
@@ -159,8 +174,10 @@ mevcut olduğu varsayılmaz; onaylı kurulum ve ayrı sır sağlama gerekir.
   Eski dizin değiştirilmedi ve Flyway taramasına alınmadı. Ana DB'ye 2026-10-31 onayla
   yalnız version 5 BASELINE metadata'sı eklendi; iş şeması/verileri korundu.
 - `schema-tools` Maven profilinde Flyway 12.4.0 varsayılan skip durumundadır;
-  otomatik baseline/clean kapalı, hedef sürüm 8'dir. V008 ana ve test DB'de açık onayla
-  uygulandı; ana DB'nin BASELINE5+SQL6+SQL7 kayıtları korundu.
+  otomatik baseline/clean kapalı, hedef sürüm 9'dur. V008 ana ve test DB'de açık onayla
+  uygulandı. V009 da iki hedefte ayrı onaylarla uygulandı; ana DB
+  BASELINE5+SQL6+SQL7+SQL8+SQL9 durumunda. Ana DB'ye her yeni migrate yalnız
+  ayrı açık onayla çalıştırılır.
   Lifecycle execution yoktur.
   Onay olmadan skip kaldırılıp Flyway komutu çalıştırılmaz.
 - Gerçek DB'de migration, yeni DB/rol veya veri değişikliği öncesinde hedef ve SQL gösterilir;
@@ -222,6 +239,9 @@ Commit ve push ayrıca açık kullanıcı talimatıyla yapılır.
 - [İzole test DB/rol kurulum paketi](docs/test-database-provisioning.md)
 - [Şema kurulumu ve baseline runbook'u](docs/schema-bootstrap-runbook.md)
 - [Geliştirme günlüğü](docs/development.md)
+- [Gönderiler ve sosyal akış tasarımı](docs/social-feed-architecture.md)
+- [Post V009 test doğrulaması](docs/post-test-validation.md)
+- [Post V009 ana DB doğrulaması](docs/post-main-validation.md)
 - [Yerel anahtar ve IntelliJ kurulumu](docs/local-development.md)
 - [Üniversite/kulüp mimarisi](docs/university-club-architecture.md)
 - [Event/EventParticipation tasarım önerisi](docs/event-architecture.md)
@@ -229,5 +249,6 @@ Commit ve push ayrıca açık kullanıcı talimatıyla yapılır.
 - [Club/ClubMembership doğrulama raporu](docs/club-phase-review.md)
 
 Tarihsel raporlardaki 164 otomatik test ve 93 canlı kontrol önceki doğrulamalara aittir;
-güncel komutlar için bu README esas alınır. Test DB'si ve kontrollü boş kurulum
-tamamlandıktan sonra Event/EventParticipation tasarımına geçilecektir.
+güncel komutlar için bu README esas alınır. Event, Announcement ve Notification
+aşamaları tamamlandı; Post ve sosyal akış da V009 ile doğrulandı. Sıradaki backend
+aşaması yorum/yanıtlar ve beğenilerdir.

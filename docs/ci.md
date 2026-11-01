@@ -1,3 +1,8 @@
+> Post test DB aşaması (2026-11-01): workflow V005–V009 boş kurulum, V009 kontratı
+> ve sınırlı Post/audit grant'i için hazır. Yerelde 451 Java/38 Python ve actionlint
+> geçti. Bu workflow henüz push edilmedi/uzakta çalıştırılmadı.
+> [Güncel sonuç](post-test-validation.md). Aşağıdaki sürüm sonuçları tarihseldir.
+
 > Notification test DB aşaması (2026-11-01): workflow V005–V008 kurulum, V008 kontratı
 > ve sınırlı notification grant'i için hazır. 374 Java/36 Python ve actionlint başarılı.
 > Yeni workflow henüz push edilmedi/uzakta çalıştırılmadı. [Güncel sonuç](notification-test-validation.md).
@@ -46,8 +51,8 @@ kullanılır; sır dosyaları veya test çıktıları cache'e konmaz.
    gizli terminal istemleriyle SCRAM olarak atanır. SQL/komut argümanı literal'i yoktur.
    Workflow masking kayıtları ve GITHUB_ENV üzerinden aynı job'a aktarılır; repo veya
    kalıcı GitHub secret gerekmez. Yerel sır dosyaları okunmaz.
-6. Yalnız test hedefiyle Flyway V005→V008 migrate; V008 şema kontratı ve
-   managed SQL SHA-256 karşılaştırması; sonra temel/Event/Announcement/Notification sınırlı runner
+6. Yalnız test hedefiyle Flyway V005→V009 migrate; V009 şema kontratı ve
+   managed SQL SHA-256 karşılaştırması; sonra temel/Event/Announcement/Notification/Post sınırlı runner
    grant'leri ve `-Ppostgres-it verify` çalışır. CI işi testten
    önce her seferinde boş DB kurduğu için kurulum yolunu da doğrular.
 

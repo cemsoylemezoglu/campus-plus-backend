@@ -121,5 +121,5 @@ Bu rapor ana DB uygulama onayı değildir. Açık onay verilirse:
    hesabı/bildirim kaydı oluşturulmayacak; test profili ana DB'ye yönlendirilmeyecek.
 
 Güncel çalışma ağacı V008 ister; ana DB geçişi onaylanmadan V007 ana şemayla
-başlatılırsa validate hatası beklenir. Validate kapatılmaz. Mobil push/outbox,
-Flutter, sosyal akış, yorum/beğeni, mesajlaşma ve diğer modüller genel kapsamda kalır.
+başlatılırsa validate hatası beklenir. Validate kapatılmaz. Dış teslim/outbox,
+sosyal akış, yorum/beğeni, mesajlaşma ve diğer modüller genel kapsamda kalır.

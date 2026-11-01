@@ -1,3 +1,36 @@
+> Post ana DB aşaması (2026-11-01): ayrı açık onayla aynı V009 ve dar grant'ler yalnız
+> campus_plus üzerinde uygulandı. V009/Flyway/Hibernate validate ve 49 salt okunur
+> GET geçti; eski on tablonun kayıt/ACL/history içerikleri korundu. Yeni tablolar boş,
+> sequence'ler kullanılmadı. Üniversiteler pasif olduğundan ana feed'in 409 koruması
+> doğrulandı; olumlu akış/yönetim/yarişlar test DB'de geçti. Aynı kodun 451 Java/38 Python
+> sonucu korunuyor. Commit/push veya yeni modül yok.
+> [Ana rapor ve doğrulama sınırları](post-main-validation.md).
+> Aşağıdaki bloklar tarihsel aşama kayıtlarıdır.
+
+> Post test DB aşaması (2026-11-01): V009 ve yalnız yeni nesneler için dar grant'ler
+> açık onayla yalnız campus_plus_test üzerinde uygulandı. İlk PG denemesinde dört
+> feed testi NULL timestamptz parametresiyle 42P18 verdi; ilk/sonraki sayfa sorguları
+> ayrıldı. Tam tekrar **451 Java (394 izole +57 PG) / 38 Python başarılı**, 0 atlama;
+> contextLoads ve 13 Post testi dahil. Eski on tablonun kayıt/ACL'leri korundu.
+> Flyway/V009 kontratı/EXPLAIN kontrolü geçti. Ana DB'ye bağlanılmadı; V009 ana geçişi
+> ayrı açık onay bekler. Commit/push yok. [Test sonucu ve ana plan](post-test-validation.md).
+> Aşağıdaki bloklar tarihsel aşama kayıtlarıdır.
+
+> Post kod aşaması (2026-11-01): öğrenci/kulüp metin gönderileri, cursor akışı,
+> kaynak yetkileri, ADMIN moderasyon/audit ve kulüp arşiv entegrasyonu hazır.
+> **394 izole Java / 36 Python testi başarılı**, 13 yeni PostgreSQL IT derlendi
+> fakat V009 onayı beklendiği için çalıştırılmadı. SQL review dizininde, managed/CI
+> hedefi 8; yeni kodun gerçek başlangıcı V009 gerektirir. DB bağlantısı, SQL uygulama,
+> commit/push yok. [Kod ve kesin onay noktası](post-phase1-review.md).
+
+> Post tasarım aşaması (2026-11-01): mevcut backend kaynakları incelendi.
+> `ad69fc6` ve `1c1d01a` önceki oturumda main'e gönderildi. Bu oturumda kaynak/policy/
+> kilit akışı incelenerek [Post ve sosyal akış tasarımı](social-feed-architecture.md)
+> hazırlandı. Java/SQL/DB değişikliği veya yeni commit/push yok. Aşağıdaki kayıtlar
+> tarihsel aşama sonuçlarıdır; o tarihteki bekleyen işlemleri güncel durum saymayın.
+> Doğrulama: 330 izole Java ve 36 Python testi başarılı; PG testleri yeniden
+> çalıştırılmadı. İlk Mockito sandbox hatası aynı komutun izinli çalışmasıyla çözüldü.
+
 > Bildirim ana DB aşaması (2026-11-01): açık onayla V008 ve yalnız yeni nesne yetkileri
 > `127.0.0.1:5434/campus_plus` üzerinde uygulandı. Eski dokuz tablonun kayıt/yetkileri
 > korundu; Flyway/Hibernate/kontrat ve **32 salt okunur GET kontrolü başarılı**.

@@ -57,7 +57,7 @@ bildirimi üretilmez. Arşivde REGISTERED için bilet iptali, ATTENDED için etk
 seçilir. Önce bildirim INSERT SELECT, sonra event kilidi altındaki eşleşen bulk update
 çalışır; bilet anahtarı beklenen version+1'i kullanır. Rollback ikisini de geri alır.
 
-Mobil push, e-posta, tercihler ve dış teslim/outbox genel kapsamda kalır; bu aşamada
+E-posta, tercihler ve dış teslim/outbox genel kapsamda kalır; bu aşamada
 uygulama içi kutu geliştirildi. Dış ağ çağrısı DB transaction'ına eklenmedi.
 
 ## Kilit altyapısı — önce ayrı doğrulandı

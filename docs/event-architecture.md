@@ -36,7 +36,7 @@ Bu belge SQL uygulama onayı değildir. Commit/push ayrıca istenir.
 - Katılım/attendance birbirinden ayrılır: kayıt olmak fiziksel katılım kanıtı değildir.
   Giriş kontrolünü ilgili yönetici yapar; öğrenci kendi kendine ATTENDED yazamaz.
 - Ana platform kapsamı (sosyal akış, duyuru, yorum/beğeni, bildirim, mesajlaşma,
-  moderasyon, Flutter ve yayınlama) korunur. Yeni bağımlılık veya ayrı servis gerekmez.
+  moderasyon ve yayınlama) korunur. Yeni bağımlılık veya ayrı servis gerekmez.
 
 ## 3. Tablolar ve JPA
 
@@ -140,7 +140,7 @@ sonrasında konur; kalan REGISTERED kayıtları aynı transaction'da NO_SHOW yap
   saat reddedilir. DB/Java'da Instant; timeZone geçerli ZoneId olarak gösterim bölgesidir.
   Yanıt UTC ISO timestamp ve timeZone içerir; yanıt tarihleri değiştirilmeden tekrar
   istek içinde kullanılabilir. Aynı Instant'ı ifade eden farklı offset'ler eşdeğerdir.
-  Mobil tarih seçici DST boşluğu/çift saati için yerel saat→Instant dönüşümünü açık
+  İstemci DST boşluğu/çift saati için yerel saat→Instant dönüşümünü açık
   kullanıcı seçimiyle çözmelidir; backend offset'siz saati sessizce tahmin etmez.
   Saat karşılaştırmaları için kilit alındıktan
   sonra tek Clock.instant() alınır; kilit beklerken kapanan kayıt penceresi atlanmaz.
@@ -300,7 +300,7 @@ EventPublished/Rescheduled/Cancelled, ParticipationRegistered/Cancelled/CheckedI
 olay sınırları transaction commit'inden sonra tüketilebilir. Bildirim modülü gelince
 güvenilir teslim için ayrı onaylı outbox/audit yaklaşımı kullanılabilir; yalnız bellek
 içi event ile teslim garantisi iddia edilmez. Şimdiki tarih/katılım sonuçları API'de görünür.
-Yorum/beğeni gerçek event FK'siyle; duyuru club/event bağlantısıyla; Flutter ise güvenli
+Yorum/beğeni gerçek event FK'siyle; duyuru club/event bağlantısıyla; API istemcileri ise güvenli
 DTO/UTC+timeZone/version/401–403–404–409 sözleşmeleriyle entegre olur. Özel mesaj okuma
 yetkisi kulüp yöneticiliğinden türetilmez. Genel moderasyon/raporlama ayrı planlanan modüldür.
 

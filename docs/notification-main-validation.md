@@ -104,6 +104,6 @@ CI V008 kurulumu/kontratı/grant adımı yerelde hazır ve statik doğrulandı; 
 edilmedi/uzakta çalıştırılmadı. Eski uzak d0b250e başarısı V005 sürümüne aittir.
 
 Sonraki uygun ürün adayı sosyal akış/gönderiler, ardından yorum/beğeni entegrasyonudur;
-önce ayrı tasarım hazırlanır. Flutter, mesajlaşma, mobil push/tercihler/outbox,
+önce ayrı tasarım hazırlanır. Mesajlaşma, bildirim tercihleri/dış teslim/outbox,
 moderasyon ve yayınlama geniş kapsamda kalır. Bu migration onayıyla yeni modül veya
 commit/push işlemine başlanmadı.

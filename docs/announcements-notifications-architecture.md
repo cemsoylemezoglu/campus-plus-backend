@@ -26,8 +26,8 @@ commit veya push onayı değildir. Son doğrulama: [Event ana DB raporu](event-m
    ve isteğe bağlı etkinlik bağlantısı.
 2. **Uygulama içi bildirim:** kişisel kutu, okunma/okunmama, okunmamış sayısı,
    toplu okundu; duyuru, kulüp/üyelik ve etkinlik işlemleriyle kalıcı entegrasyon.
-3. **Sonraki ayrı aşama:** Flutter bildirim ekranı ve mobil push; ardından bildirim
-   tercihleri/abonelikler ve e-posta kanalı. Bunlar genel ürün kapsamından çıkarılmaz.
+3. **Sonraki ayrı aşama:** bildirim tercihleri/abonelikler ve dış teslim kanalları.
+   Bu başlıklar mevcut uygulama içi bildirimden ayrı değerlendirilir.
 
 Duyuru, sosyal akış gönderisinden ayrı bir kulüp yayınıdır. Yorum/beğeni ileride bu
 kaynağa gerçek FK ile bağlanabilir. Genel sosyal akış ve özel mesajlaşma modülleri korunur;
@@ -158,8 +158,8 @@ bildirimler otomatik dağıtılmaz; mevcut uygun duyurular listeden okunabilir.
   sayısı ve transaction süresi ölçülür; kapasite kanıtı olmadan sınırsız ölçek iddiası
   yoktur. Gerekirse kalıcı alıcı snapshot'lı outbox ayrı planlanır; snapshot alınmadan
   sonradan taranan değişebilir üyelik satırları yayın-anı alıcı listesi sayılmaz.
-- Mobil push/e-posta aşamasında kaynak transaction'ıyla birlikte yazılan outbox,
-  retry/backoff, teslim dedupe, token/cihaz tercihleri ayrıca eklenecek. Harici servise
+- Dış teslim aşamasında kaynak transaction'ıyla birlikte yazılan outbox,
+  retry/backoff, teslim dedupe ve teslim tercihleri ayrıca eklenecek. Harici servise
   DB transaction'ı içinden ağ çağrısı yapılmayacak.
 
 ### İlk entegrasyon matrisi
