@@ -1,2 +1,2 @@
 package com.campusplus.backend.entity;
-public enum NotificationResource { CLUB, CLUB_MEMBERSHIP, ANNOUNCEMENT, EVENT, EVENT_PARTICIPATION }
+public enum NotificationResource { CLUB, CLUB_MEMBERSHIP, ANNOUNCEMENT, EVENT, EVENT_PARTICIPATION, POST, POST_COMMENT }

@@ -7,7 +7,7 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 public interface NotificationRepository extends JpaRepository<Notification,Long> {
-    @EntityGraph(attributePaths={"club","club.university","announcement","event","participation","membership"})
+    @EntityGraph(attributePaths={"club","club.university","announcement","event","participation","membership","post","post.university","post.club","comment","comment.root"})
     @Query("select n from Notification n where n.recipientId=:recipient and (:unread=false or n.readAt is null)")
     Page<Notification> inbox(@Param("recipient") Long recipient,@Param("unread") boolean unread,Pageable pageable);
     @Lock(LockModeType.PESSIMISTIC_WRITE)

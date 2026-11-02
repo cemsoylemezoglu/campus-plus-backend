@@ -1,6 +1,10 @@
 package com.campusplus.backend.entity;
 import static com.campusplus.backend.entity.NotificationResource.*;
 public enum NotificationType {
+    POST_COMMENTED(POST_COMMENT,"Gönderinize yeni bir yorum yapıldı."),
+    COMMENT_REPLIED(POST_COMMENT,"Yorumunuza yeni bir yanıt geldi."),
+    POST_LIKED(POST,"Gönderiniz beğenildi."),
+    COMMENT_LIKED(POST_COMMENT,"Yorumunuz beğenildi."),
     ANNOUNCEMENT_PUBLISHED(ANNOUNCEMENT,"Yeni bir kulüp duyurusu yayımlandı."),
     CLUB_APPROVED(CLUB,"Kulübünüz onaylandı."), CLUB_REJECTED(CLUB,"Kulüp başvurunuz değerlendirildi."),
     CLUB_SUSPENDED(CLUB,"Kulübünüz askıya alındı."), CLUB_RESTORED(CLUB,"Kulübünüz yeniden etkinleştirildi."),

@@ -15,6 +15,8 @@ public class Notification {
     @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(name="event_id",updatable=false) private Event event;
     @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(name="participation_id",updatable=false) private EventParticipation participation;
     @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(name="membership_id",updatable=false) private ClubMembership membership;
+    @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(name="post_id",updatable=false) private Post post;
+    @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(name="comment_id",updatable=false) private PostComment comment;
     @Column(name="created_at",nullable=false,updatable=false) private Instant createdAt;
     @Column(name="read_at") private Instant readAt;
     @Version @Column(nullable=false) private Long version;
@@ -29,6 +31,8 @@ public class Notification {
     public Event getEvent(){return event;}
     public EventParticipation getParticipation(){return participation;}
     public ClubMembership getMembership(){return membership;}
+    public Post getPost(){return post;}
+    public PostComment getComment(){return comment;}
     public Instant getCreatedAt(){return createdAt;}
     public Instant getReadAt(){return readAt;}
     public Long getVersion(){return version;}

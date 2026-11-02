@@ -18,6 +18,8 @@ TABLES_BY_VERSION = {
     7: frozenset(TABLES | {'events', 'event_participations', 'club_announcements'}),
     8: frozenset(TABLES | {'events', 'event_participations', 'club_announcements', 'notifications'}),
     9: frozenset(TABLES | {'events', 'event_participations', 'club_announcements', 'notifications', 'posts', 'post_moderation_actions'}),
+    10: frozenset(TABLES | {'events', 'event_participations', 'club_announcements', 'notifications', 'posts', 'post_moderation_actions',
+                          'post_comments', 'post_likes', 'post_comment_likes', 'comment_moderation_actions'}),
 }
 
 # Manually reviewed on PostgreSQL 17.11 during the first empty V005 installation.
@@ -162,7 +164,7 @@ def main():
     commands = parser.add_subparsers(dest='command', required=True)
     inventory = commands.add_parser('inspect')
     inventory.add_argument('--target', choices=('existing', 'test'), required=True)
-    inventory.add_argument('--schema-version', type=int, choices=(5, 6, 7, 8, 9), default=5,
+    inventory.add_argument('--schema-version', type=int, choices=(5, 6, 7, 8, 9, 10), default=5,
                            help='Expected table set only; structural contract comparison is still required.')
     inventory.add_argument('--psql', default='psql')
     inventory.add_argument('--output', type=Path, required=True)

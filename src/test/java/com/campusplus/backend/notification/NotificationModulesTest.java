@@ -42,7 +42,7 @@ class NotificationModulesTest {
     static final Instant NOW=Instant.parse("2030-01-01T12:00:00Z");
     @Configuration @EnableWebMvc @EnableWebSecurity
     @Import({SecurityConfig.class,CurrentActor.class,ClubPolicy.class,ClubMembershipPolicy.class,ClubWorkspace.class,
-        AnnouncementPolicy.class,EventPolicy.class,NotificationReader.class,NotificationService.class,NotificationController.class,GlobalExceptionHandler.class})
+        AnnouncementPolicy.class,EventPolicy.class,PostPolicy.class,NotificationReader.class,NotificationService.class,NotificationController.class,GlobalExceptionHandler.class})
     static class Config {
         @Bean UserRepository users(){return mock(UserRepository.class);}
         @Bean ClubRepository clubs(){return mock(ClubRepository.class);}
@@ -86,6 +86,8 @@ class NotificationModulesTest {
         if(source instanceof Event e)field(n,"event",e);
         if(source instanceof ClubMembership m)field(n,"membership",m);
         if(source instanceof EventParticipation p){field(n,"participation",p);field(n,"event",p.getEvent());}
+        if(source instanceof Post p)field(n,"post",p);
+        if(source instanceof PostComment p){field(n,"comment",p);field(n,"post",p.getPost());}
         inbox.put(id,n);return n;
     }
     @BeforeEach void fixtures(){
@@ -179,6 +181,29 @@ class NotificationModulesTest {
         getAs(2,"/unread-count").andExpect(status().isOk()).andExpect(jsonPath("$.count").value(8));
     }
     NotificationResponse resolve(long id,long user){var reader=context.getBean(NotificationReader.class);var n=inbox.get(id);var local=roster.get(user);return reader.response(n,new NotificationReader.Context(people.get(user),academics.get(user),local==null?Map.of():Map.of(local.getClub().getId(),local)));}
+    Post studentPost(){var p=new Post(university,people.get(2L),null,"Private source",PostAudience.UNIVERSITY_STUDENTS,NOW);field(p,"id",200L);field(p,"version",0L);p.publish(NOW);return p;}
+    @Test void clublessStudentPostNotificationIsAvailableButRevokedOnProfileChange(){
+        var p=studentPost();note(200,2,NotificationType.POST_LIKED,null,p);
+        var n=resolve(200,2);assertTrue(n.available());assertNull(n.target().clubId());assertEquals(200,n.target().postId());
+        academics.get(2L).update(other,"New",null,null,NOW);assertFalse(resolve(200,2).available());assertNull(resolve(200,2).target());
+    }
+    @Test void commentNotificationHonorsRootModerationAndRemoval(){
+        var p=studentPost();var root=new PostComment(p,people.get(3L),null,"Root",NOW);field(root,"id",300L);
+        var reply=new PostComment(p,people.get(2L),root,"Reply",NOW);field(reply,"id",301L);
+        note(201,2,NotificationType.COMMENT_REPLIED,null,reply);assertTrue(resolve(201,2).available());
+        root.moderate(CommentModerationScope.PLATFORM,true,NOW);assertFalse(resolve(201,2).available());
+        root.moderate(CommentModerationScope.PLATFORM,false,NOW);root.remove(NOW);assertTrue(resolve(201,2).available());
+        reply.remove(NOW);assertFalse(resolve(201,2).available());
+    }
+    @Test void mismatchedPostClubOrCommentReferenceDoesNotExposeTarget(){
+        var p=studentPost();note(202,2,NotificationType.POST_LIKED,club,p);assertFalse(resolve(202,2).available());
+        var otherPost=studentPost();field(otherPost,"id",201L);var comment=new PostComment(otherPost,people.get(2L),null,"Other source",NOW);field(comment,"id",302L);
+        var n=note(203,2,NotificationType.COMMENT_LIKED,null,p);field(n,"comment",comment);assertFalse(resolve(203,2).available());
+    }
+    @Test void postHiddenByAdminMakesOldSocialNoticeGeneric(){
+        var p=studentPost();note(204,2,NotificationType.POST_LIKED,null,p);p.moderate(true,NOW);
+        var n=resolve(204,2);assertFalse(n.available());assertNull(n.target());assertFalse(n.message().contains("Private"));
+    }
     @Test void membershipLossHidesPrivateAnnouncementAndEventTargets() {
         assertTrue(resolve(100,2).available());assertTrue(resolve(101,2).available());
         field(roster.get(2L),"status",ClubMembershipStatus.LEFT);

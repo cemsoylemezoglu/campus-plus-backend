@@ -89,4 +89,11 @@ public class PostWorkspace {
         Post post = posts.findForUpdate(id).orElseThrow(() -> new ResourceNotFoundException("Gönderi bulunamadı."));
         em.refresh(post, LockModeType.PESSIMISTIC_WRITE); return post;
     }
+    /** Interactions recheck their own policy after this shared source lock order. */
+    public Locked lockInteraction(Long id) {
+        Post preview=post(id);User actor=core.lockUser(core.current.userId());
+        Club club=preview.getClub()==null?null:lockClub(preview.getClub().getId());
+        University u=university(preview.getUniversity().getId());
+        return new Locked(actor,lockPost(id),club,u);
+    }
 }

@@ -233,10 +233,28 @@ class SchemaToolsTest(unittest.TestCase):
                 with self.assertRaises(RuntimeError):
                     tools.inspect(self.env, 'existing', 'psql', 9)
 
+    def test_v010_requires_explicit_version_and_exact_sixteen_tables(self):
+        report = copy.deepcopy(self.contract)
+        report['schema']['tables'].extend({'name': name} for name in ('events', 'event_participations', 'club_announcements', 'notifications', 'posts', 'post_moderation_actions', 'post_comments', 'post_likes', 'post_comment_likes', 'comment_moderation_actions'))
+        with patch.object(tools, 'read_document', return_value=report):
+            self.assertEqual(tools.inspect(self.env, 'existing', 'psql', 10), report)
+            for version in (5, 6, 7, 8, 9):
+                with self.assertRaises(RuntimeError):
+                    tools.inspect(self.env, 'existing', 'psql', version)
+
+    def test_v010_rejects_missing_audit_or_extra_unrelated_table(self):
+        base = ('events', 'event_participations', 'club_announcements', 'notifications', 'posts', 'post_moderation_actions', 'post_comments', 'post_likes', 'post_comment_likes')
+        for extra in ((), ('comment_moderation_actions', 'unexpected')):
+            report = copy.deepcopy(self.contract)
+            report['schema']['tables'].extend({'name': name} for name in base + extra)
+            with patch.object(tools, 'read_document', return_value=report):
+                with self.assertRaises(RuntimeError):
+                    tools.inspect(self.env, 'existing', 'psql', 10)
+
     def test_unknown_schema_version_never_connects(self):
         with patch.object(tools, 'read_document') as read:
             with self.assertRaises(ValueError):
-                tools.inspect(self.env, 'existing', 'psql', 10)
+                tools.inspect(self.env, 'existing', 'psql', 11)
             read.assert_not_called()
 
     def test_v006_table_allowlist_does_not_weaken_structural_v005_comparison(self):

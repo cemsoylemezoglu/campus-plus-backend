@@ -15,7 +15,8 @@ public class NotificationReader {
     private final ClubWorkspace core;
     private final AnnouncementPolicy announcements;
     private final EventPolicy events;
-    public NotificationReader(ClubWorkspace core,AnnouncementPolicy announcements,EventPolicy events){this.core=core;this.announcements=announcements;this.events=events;}
+    private final PostPolicy posts;
+    public NotificationReader(ClubWorkspace core,AnnouncementPolicy announcements,EventPolicy events,PostPolicy posts){this.core=core;this.announcements=announcements;this.events=events;this.posts=posts;}
     public record Context(User actor,StudentProfile profile,Map<Long,ClubMembership> memberships) {}
     public Context context(List<Notification> values) {
         User actor=core.actor();var ids=values.stream().map(Notification::getClub).filter(Objects::nonNull).map(Club::getId).distinct().toList();
@@ -26,8 +27,16 @@ public class NotificationReader {
     public NotificationResponse response(Notification n,Context ctx) {
         if(!Objects.equals(n.getRecipientId(),ctx.actor().getId()))throw new ResourceNotFoundException("Bildirim bulunamadı.");
         Club c=n.getClub();ClubMembership local=c==null?null:ctx.memberships().get(c.getId());
-        Long source=null;Long eventId=null;
-        if(c!=null)switch(n.getType().resource()) {
+        Long source=null;Long eventId=null;Long postId=null;
+        var resource=n.getType().resource();
+        if(resource==NotificationResource.POST||resource==NotificationResource.POST_COMMENT) {
+            Post p=n.getPost();
+            if(p!=null&&Objects.equals(p.getClub()==null?null:p.getClub().getId(),c==null?null:c.getId())&&posts.visible(p,ctx.actor(),ctx.profile(),local)) {
+                if(resource==NotificationResource.POST){source=p.getId();postId=p.getId();}
+                else {PostComment comment=n.getComment();
+                    if(comment!=null&&comment.getPost().getId().equals(p.getId())&&comment.visibleContent()){source=comment.getId();postId=p.getId();}}
+            }
+        } else if(c!=null)switch(resource) {
             case CLUB -> {if(core.policy.visible(c,ctx.actor(),local))source=c.getId();}
             case CLUB_MEMBERSHIP -> {
                 ClubMembership m=n.getMembership();
@@ -48,10 +57,11 @@ public class NotificationReader {
                 if(p!=null&&e!=null&&p.getUserId().equals(ctx.actor().getId())&&p.getEvent().getId().equals(e.getId())
                     &&e.getClub().getId().equals(c.getId())){source=p.getId();eventId=e.getId();}
             }
+            default -> { }
         }
         boolean available=source!=null;
         return new NotificationResponse(n.getId(),n.getType(),n.getCreatedAt(),n.getReadAt(),n.getVersion(),available,
             available?n.getType().message():"Bu bildirimin içeriğine artık erişilemiyor.",
-            available?new NotificationResponse.Target(n.getType().resource(),source,c.getId(),eventId):null);
+            available?new NotificationResponse.Target(n.getType().resource(),source,c==null?null:c.getId(),eventId,postId):null);
     }
 }
