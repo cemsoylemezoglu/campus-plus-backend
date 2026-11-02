@@ -1,3 +1,13 @@
+> Yorum/beğeni test DB aşaması (2026-11-02): workflow V005→V010 boş kurulum,
+> v010 kontrat ve dar comment/like grant için güncellendi. Yerelde 521 Java/40 Python
+> ve actionlint başarılı. Yeni workflow henüz push edilmedi/uzakta çalıştırılmadı.
+> [Güncel doğrulama](comments-test-validation.md).
+
+> Uzak CI doğrulaması (2026-11-02): a82300e için
+> [41333220058](https://github.com/cemsoylemezoglu/campus-plus-backend/actions/runs/41333220058)
+> completed/success. V009 workflow artık origin/main'de; önceki "henüz push edilmedi"
+> notları kendi aşamalarının tarihsel durumudur.
+
 > Post test DB aşaması (2026-11-01): workflow V005–V009 boş kurulum, V009 kontratı
 > ve sınırlı Post/audit grant'i için hazır. Yerelde 451 Java/38 Python ve actionlint
 > geçti. Bu workflow henüz push edilmedi/uzakta çalıştırılmadı.
@@ -51,8 +61,8 @@ kullanılır; sır dosyaları veya test çıktıları cache'e konmaz.
    gizli terminal istemleriyle SCRAM olarak atanır. SQL/komut argümanı literal'i yoktur.
    Workflow masking kayıtları ve GITHUB_ENV üzerinden aynı job'a aktarılır; repo veya
    kalıcı GitHub secret gerekmez. Yerel sır dosyaları okunmaz.
-6. Yalnız test hedefiyle Flyway V005→V009 migrate; V009 şema kontratı ve
-   managed SQL SHA-256 karşılaştırması; sonra temel/Event/Announcement/Notification/Post sınırlı runner
+6. Yalnız test hedefiyle Flyway V005→V010 migrate; V010 şema kontratı ve
+   managed SQL SHA-256 karşılaştırması; sonra temel/Event/Announcement/Notification/Post/Comment sınırlı runner
    grant'leri ve `-Ppostgres-it verify` çalışır. CI işi testten
    önce her seferinde boş DB kurduğu için kurulum yolunu da doğrular.
 

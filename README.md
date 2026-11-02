@@ -3,21 +3,17 @@
 Campus+, üniversite öğrencilerini, öğrenci kulüplerini ve kampüs yaşamını bir araya
 getiren sosyal platformun Spring Boot tabanlı REST API projesidir.
 
-> Geliştirme durumu: Post metin gönderileri, sosyal akış ve moderasyon aşaması tamamlandı.
-> V009 ana ve test Campus+ DB'lerinde ayrı açık onaylarla uygulandı. Aynı kodun
-> 451 Java/38 Python testi ve ana ortamda 49 salt okunur GET kontrolü başarılı.
-> [Ana doğrulama ve mevcut veri sınırları](docs/post-main-validation.md),
-> [otomatik test sonucu](docs/post-test-validation.md).
+> Gönderi yorum/yanıt, beğeni, moderasyon ve bildirim entegrasyonu tamamlandı.
+> **521 Java (449 izole +72 PostgreSQL) /40 Python başarılı**; contextLoads ve 15
+> yeni PG testi dahil. V010 ana ve test DB'de ayrı açık onaylarla uygulandı.
+> Ana ortamda 72 salt okunur GET başarılı; eski on iki tablonun değer/yetkileri korundu.
+> [Ana doğrulama ve veri sınırları](docs/comments-main-validation.md),
+> [otomatik test sonucu](docs/comments-test-validation.md).
 
-Tamamlanan son aşama [gönderiler ve kampüs sosyal akışı](docs/social-feed-architecture.md).
-Kod ve V009 SQL'i hazır; **V009 ana ve test DB'de ayrı açık onaylarla uygulandı**.
-[Kod aşaması ve SQL etkileri](docs/post-phase1-review.md).
+Tamamlanan son aşama [Post yorumları ve beğenileri](docs/comments-likes-architecture.md).
+Önceki Post/akış aşamasının sonuçları [V009 raporundadır](docs/post-main-validation.md).
 
-**Güncel test sonucu: 451 Java (394 izole + 57 PostgreSQL) ve 38 Python başarılı**;
-contextLoads ve 13 yeni Post PG testi dahil. Eski on tablonun kayıt/yetkileri korundu.
-[V009 test DB doğrulaması](docs/post-test-validation.md).
-
-> Ana/test şema V009 ile uyumlu, Hibernate validate korunuyor. Maven/CI hedefi 9;
+> Ana/test şema V010 ile uyumlu, Hibernate validate korunuyor. Maven/CI hedefi 10;
 > migration varsayılan olarak skip durumundadır. Mevcut ana profillerin üniversiteleri
 > pasif olduğu için normal feed şu an 409 döner; bu kayıtlar değiştirilmedi.
 
@@ -33,6 +29,8 @@ contextLoads ve 13 yeni Post PG testi dahil. Eski on tablonun kayıt/yetkileri k
 - Duyuru taslak/yayın/düzenleme/geri çekme/arşiv ve güvenli etkinlik bağlantıları.
 - Kişisel bildirim kutusu, okunma durumu ve duyuru/kulüp/üyelik/etkinlik entegrasyonları.
 - Öğrenci/kulüp metin gönderileri, cursor sosyal akışı ve gerekçeli ADMIN moderasyonu.
+- Post kök yorumları/yanıtları, beğeniler, kişisel içerik geçmişi, bağımsız kaynak/
+  platform moderasyonu ve gizliliğe duyarlı etkileşim bildirimleri.
 
 CLUB_ADMIN tek başına başka kulüpleri yönetme hakkı vermez. Parola/hash yanıt DTO'larına
 konulmaz. Event/EventParticipation; yayın, kontenjan, kayıt/iptal, check-in, sonlandırma
@@ -100,8 +98,10 @@ sınıflarını temizleyin:
 
 Surefire raporları `target/surefire-reports/` altındadır. Normal `test` veya `verify`,
 `postgres-it` profili açılmadıkça gerçek Spring Boot/JDBC context testini çalıştırmaz.
-Post kodunda **394 izole Java testi başarılı**; önceki 330 test korunur.
-[Post kod raporu](docs/post-phase1-review.md).
+Güncel izole test sonucu **476 başarılı**: yorum/beğeni aşamasındaki 449 teste
+Event/Announcement etkileşim policy'sinin 27 testi eklendi. Yeni policy henüz
+endpoint'lere bağlanmadı. [Policy sonucu](docs/club-interactions-architecture.md#10-ilk-kod-aşaması-doğrulaması).
+Son tam V010 doğrulaması 449 izole +72 PostgreSQL =521 Java testidir.
 
 ### PostgreSQL entegrasyon testleri
 
@@ -109,13 +109,13 @@ Post kodunda **394 izole Java testi başarılı**; önceki 330 test korunur.
 ./mvnw -Ppostgres-it verify
 ```
 
-Yerel test DB'sinde V009 ve gerekli grant'ler onayla uygulandı. Başka ortamda
-önce onaylı V009 kurulumu gerekir. Context testi eksik tabloyu görmezden gelmez veya
+Yerel test DB'sinde V010 ve gerekli grant'ler onayla uygulandı. Başka ortamda
+önce onaylı V010 kurulumu gerekir. Context testi eksik tabloyu görmezden gelmez veya
 otomatik oluşturmaz.
 
 Failsafe, korunmuş `contextLoads()` testini `CampusPlusBackendApplicationIT` sınıfında,
 gerçek HTTP/transaction/eşzamanlılık testlerini `PostgresApiIT`, `PostgresEventIT` ve
-`PostgresAnnouncementIT`, `PostgresNotificationIT` ve `PostgresPostIT` sınıflarında çalıştırır.
+`PostgresAnnouncementIT`, `PostgresNotificationIT`, `PostgresPostIT` ve `PostgresCommentIT` sınıflarında çalıştırır.
 Test atlanmaz: eksik/yanlış ayarda build güvenli biçimde başarısız olur.
 `TEST_DB_*` olmadan ana `DB_*` değişkenlerine geri düşülmez.
 
@@ -125,10 +125,11 @@ Test atlanmaz: eksik/yanlış ayarda build güvenli biçimde başarısız olur.
 | TEST_DB_USERNAME | `campus_plus_test_runner` — sınırlı test hesabı |
 | TEST_DB_PASSWORD | Bu test hesabının süreç ortamındaki gizli parolası |
 
-Yerel test ortamında onayla V005–V009 uygulanmış, sınırlı runner hesabına yeni
+Yerel test ortamında onayla V005–V010 uygulanmış, sınırlı runner hesabına yeni
 etkinlik/duyuru/bildirim/gönderi tabloları için gerekli DML/sequence yetkileri verilmiştir.
-Post moderasyon audit tablosunda yalnız SELECT/INSERT vardır. Başka bir ortamda
-önce onaylı kurulum ve V009 gerekir.
+Post moderasyon audit tablosunda yalnız SELECT/INSERT vardır. Yorum/beğeni
+tablolarında da sınırlı DML, yeni audit'te yalnız SELECT/INSERT vardır.
+Başka bir ortamda önce onaylı kurulum ve V010 gerekir.
 Farklı port/sunucu,
 `campus_plus`, URL parametreleri ve alternatif JDBC biçimleri reddedilir. Bağlantı
 kurulduğunda sunucunun adresi, portu, DB adı ve PostgreSQL 17 sürümü ayrıca kontrol edilir.
@@ -174,9 +175,9 @@ mevcut olduğu varsayılmaz; onaylı kurulum ve ayrı sır sağlama gerekir.
   Eski dizin değiştirilmedi ve Flyway taramasına alınmadı. Ana DB'ye 2026-10-31 onayla
   yalnız version 5 BASELINE metadata'sı eklendi; iş şeması/verileri korundu.
 - `schema-tools` Maven profilinde Flyway 12.4.0 varsayılan skip durumundadır;
-  otomatik baseline/clean kapalı, hedef sürüm 9'dur. V008 ana ve test DB'de açık onayla
-  uygulandı. V009 da iki hedefte ayrı onaylarla uygulandı; ana DB
-  BASELINE5+SQL6+SQL7+SQL8+SQL9 durumunda. Ana DB'ye her yeni migrate yalnız
+  otomatik baseline/clean kapalı, hedef sürüm 10'dur. V008 ana ve test DB'de açık onayla
+  uygulandı. V009 ve V010 da iki hedefte ayrı onaylarla uygulandı; ana DB
+  BASELINE5+SQL6+SQL7+SQL8+SQL9+SQL10 durumunda. Ana DB'ye her yeni migrate yalnız
   ayrı açık onayla çalıştırılır.
   Lifecycle execution yoktur.
   Onay olmadan skip kaldırılıp Flyway komutu çalıştırılmaz.
@@ -240,6 +241,8 @@ Commit ve push ayrıca açık kullanıcı talimatıyla yapılır.
 - [Şema kurulumu ve baseline runbook'u](docs/schema-bootstrap-runbook.md)
 - [Geliştirme günlüğü](docs/development.md)
 - [Gönderiler ve sosyal akış tasarımı](docs/social-feed-architecture.md)
+- [Yorum/beğeni V010 test doğrulaması](docs/comments-test-validation.md)
+- [Yorum/beğeni V010 ana doğrulaması](docs/comments-main-validation.md)
 - [Post V009 test doğrulaması](docs/post-test-validation.md)
 - [Post V009 ana DB doğrulaması](docs/post-main-validation.md)
 - [Yerel anahtar ve IntelliJ kurulumu](docs/local-development.md)
@@ -251,4 +254,5 @@ Commit ve push ayrıca açık kullanıcı talimatıyla yapılır.
 Tarihsel raporlardaki 164 otomatik test ve 93 canlı kontrol önceki doğrulamalara aittir;
 güncel komutlar için bu README esas alınır. Event, Announcement ve Notification
 aşamaları tamamlandı; Post ve sosyal akış da V009 ile doğrulandı. Sıradaki backend
-aşaması yorum/yanıtlar ve beğenilerdir.
+aşaması Event/Announcement yorum/beğeni kaynak entegrasyonlarıdır; Post etkileşimleri
+V010 ile tamamlandı.

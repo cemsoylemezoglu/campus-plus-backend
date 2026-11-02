@@ -1,3 +1,45 @@
+> Event/Announcement etkileşim ilk kod adımı (2026-11-02): ayrı ClubInteractionPolicy
+> ve 27 yeni test eklendi. **476 izole Java /40 Python başarılı**. Policy henüz mevcut
+> endpoint'lere bağlanmadı; yeni entity/SQL/DB veya commit/push/force push yok.
+> PostgreSQL testleri yeniden çalıştırılmadı; son tam V010 sonucu 521 Java/40 Python.
+> [Tasarım ve ilk adım sonucu](club-interactions-architecture.md#10-ilk-kod-aşaması-doğrulaması).
+
+> Event/Announcement etkileşim tasarımı (2026-11-02): mevcut source policy ve kilit
+> sıraları incelendi. Event'in daha geniş okumayla üniversite bazlı yazma ayrımı,
+> yönetici taslak erişiminin katılıma taşınmaması ve V010 Post API'sinin korunması
+> belgelendi. [Yeni kulüp etkileşim tasarımı](club-interactions-architecture.md).
+> Bu adımda yeni Java/SQL, DB, commit/push veya force push işlemi yok.
+
+> Yorum/beğeni ana DB aşaması (2026-11-02): ayrı açık onayla aynı V010 ve dar grant
+> yalnız campus_plus üzerinde uygulandı. V010/Flyway/Hibernate validate ve 72 salt
+> okunur GET geçti. Eski on iki tablonun değer/ACL/history kayıtları korundu; yeni
+> tablolar boş/sequence'ler kullanılmadı. JWT secret ve pasif üniversiteler aynı.
+> Pozitif yazma/yarişlar test DB'de kanıtlandı; aynı kodun 521 Java/40 Python sonucu
+> korunuyor. Commit/push veya yeni özellik yok. [Ana rapor](comments-main-validation.md).
+> Aşağıdaki bloklar tarihsel sonuçlardır.
+
+> Yorum/beğeni test DB aşaması (2026-11-02): V010/dar grant açık onayla yalnız
+> campus_plus_test üzerinde uygulandı. Dört like testindeki SELECT DISTINCT NULL
+> tip hatası alıcı tekilleştirmesi alt sorguya taşınarak düzeltildi; tam tekrar
+> **521 Java (449 izole +72 PG) /40 Python başarılı**, 0 atlama. contextLoads ve
+> 15 yeni PG testi dahil. Eski on iki tablonun değer/ACL'leri korundu; eski notice
+> kaynak alanları NULL. Flyway/kontrat/EXPLAIN başarılı. Ana DB'ye bağlanılmadı;
+> ayrı ana onay beklenir. Commit/push yok. [Sonuç](comments-test-validation.md).
+> Aşağıdaki bloklar tarihsel aşama kayıtlarıdır.
+
+> Yorum/yanıt/beğeni kod aşaması (2026-11-02): ownership, iki scope moderasyon,
+> placeholder/cursor, idempotent like ve transactional kaynak-gizli bildirimler hazır.
+> **449 izole Java /38 Python başarılı**; 15 PG IT derlendi, V010 onayı beklediği
+> için çalıştırılmadı. V010 review dizininde; DB bağlantısı, SQL uygulama, commit/push
+> veya force push yok. Yeni kaynak V010 ister, validate korunuyor; Maven/CI hedefi 9.
+> [Kod sonucu ve kesin SQL onayı](comments-phase1-review.md).
+
+> Yorum/beğeni tasarımı (2026-11-02): a82300e için uzak CI completed/success doğrulandı;
+> çalışma başlangıcında ağaç temizdi. Mevcut Post ve Notification policy/okuma/kilit
+> yapıları incelenerek [yorum/yanıt/beğeni tasarımı](comments-likes-architecture.md)
+> hazırlandı. Yeni Java/SQL, DB bağlantısı, migration, commit/push veya force push yok.
+> Aşağıdaki kayıtlar tarihsel aşama sonuçlarıdır.
+
 > Post ana DB aşaması (2026-11-01): ayrı açık onayla aynı V009 ve dar grant'ler yalnız
 > campus_plus üzerinde uygulandı. V009/Flyway/Hibernate validate ve 49 salt okunur
 > GET geçti; eski on tablonun kayıt/ACL/history içerikleri korundu. Yeni tablolar boş,
