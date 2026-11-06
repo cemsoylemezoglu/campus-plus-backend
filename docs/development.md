@@ -1,3 +1,37 @@
+> Event/Announcement etkileşim ana aşaması (2026-11-06): ayrı açık onayla aynı V011
+> ve dar grant yalnız campus_plus üzerinde uygulandı. V011 kontrat/Flyway/Hibernate
+> validate ve **90 salt okunur GET** başarılı. Mevcut 16 tablonun değer/ACL/history
+> kayıtları korundu; yeni tablolar boş/sequence'ler kullanılmadı. Kalıcı JWT aynı;
+> ana fixture veya üniversite aktivasyonu yok. Testteki 624 Java/44 Python sonucu
+> geçerli; ana yazma testleri tekrarlanmadı. [Ana sonuç](club-interactions-main-validation.md).
+> Aşağıdaki bloklar tarihsel aşama kayıtlarıdır.
+
+> Event/Announcement etkileşim test aşaması (2026-11-06): açık onayla yalnız
+> campus_plus_test üzerinde aynı V011 ve dar grant uygulandı. **624 Java (540 izole
+> +84 PG) /44 Python başarılı**; contextLoads ve 12 yeni PG testi dahil. Eski 16
+> tablonun değer/ACL/history kayıtları korundu. İki test kurulum sorunu ve audit
+> proxy kontrolü düzeltildi; son tam koşu yeşil. Uygulama/SQL tekrar koşularında aynı.
+> Flyway/kontrat/EXPLAIN ve actionlint başarılı. Ana DB'ye bağlantı/test verisi,
+> commit/push yok; ayrı ana onay bekleniyor. Maven/CI hedefi 11, skip=true/validate.
+> [Sonuç ve doğrulama sınırları](club-interactions-test-validation.md).
+> Aşağıdaki bloklar tarihsel aşama kayıtlarıdır.
+
+> Event/Announcement yorum/beğeni kod aşaması (2026-11-06): entity/repository/DTO,
+> servis/API, kaynak bazlı moderasyon ve transactional bildirimler hazır.
+> **540 izole Java /44 Python başarılı**. 12 yeni PG IT derlendi; henüz çalıştırılmadı.
+> V011/grant SQL review dizininde, uygulama onayı bekleniyor. Yeni kod V011 ister;
+> validate korunuyor, Maven/CI migration hedefi 10. DB bağlantısı/SQL/commit/push yok.
+> [Kesin değişiklikler ve test onay planı](club-interactions-phase1-review.md).
+> Aşağıdaki bloklar tarihsel aşama kayıtlarıdır.
+
+> Event/Announcement kaynak ve transaction temeli (2026-11-05): typed kaynak adapter,
+> kaynak/thread bağlı cursor ve kilit sonrası yeniden yetkilendiren MANDATORY
+> workspace eklendi. **514 izole Java /40 Python başarılı** (38 yeni Java testi).
+> Yeni endpoint/entity/SQL yok; V010 başlangıç uyumluluğu korunuyor. Bu oturumda DB
+> bağlantısı veya commit/push yok. Önceki c5e291a uzak CI sonucu success doğrulandı.
+> [Sonuç ve sınırlar](club-interactions-foundation-validation.md).
+> Aşağıdaki bloklar tarihsel aşama kayıtlarıdır.
+
 > Event/Announcement etkileşim ilk kod adımı (2026-11-02): ayrı ClubInteractionPolicy
 > ve 27 yeni test eklendi. **476 izole Java /40 Python başarılı**. Policy henüz mevcut
 > endpoint'lere bağlanmadı; yeni entity/SQL/DB veya commit/push/force push yok.

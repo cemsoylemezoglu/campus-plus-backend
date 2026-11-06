@@ -1,9 +1,14 @@
 # Event ve Announcement yorum/beğeni kaynak entegrasyonu
 
-Tarih: 2026-11-02. **Tasarım ve ilk policy/test aşaması hazır.**
-ClubInteractionPolicy +27 test eklendi; 476 izole Java/40 Python başarılı.
-Henüz yeni endpoint/entity/repository veya SQL yok; DB bağlantısı açılmadı.
-Policy mevcut endpoint'lere bağlanmadığı için bu adım normal API davranışını değiştirmez.
+Tasarım tarihi: 2026-11-02. Güncelleme: 2026-11-06.
+**V011 test ve ana migration/doğrulama aşamaları tamamlandı.**
+Güncel sonuç **624 Java (540 izole +84 PG) /44 Python başarılı**, contextLoads
+ve 12 yeni PG testi dahil. Ana/test V011 ayrı açık onaylarla uygulandı.
+Ana Hibernate validate ve 90 salt okunur GET başarılı; mevcut kayıtlar korundu.
+[Test sonucu](club-interactions-test-validation.md),
+[ana doğrulama](club-interactions-main-validation.md).
+[Kesin SQL ve önceki onay incelemesi](club-interactions-phase1-review.md).
+[Önceki temel altyapı doğrulaması](club-interactions-foundation-validation.md).
 Post etkileşimleri V010 ana/test ile tamamlandı. Bu belge sonraki kaynak entegrasyonudur;
 Post davranışını veya eski migration'ları değiştirme onayı değildir.
 
@@ -25,7 +30,9 @@ Post davranışını veya eski migration'ları değiştirme onayı değildir.
   uyumlu olmalı; Post'un university→post sırası buraya aynen kopyalanmamalıdır.
 - Son tam test 521 Java/40 Python, ana 72 GET başarılı. Bu tasarım adımında
   DB işlemi yapılmadı. Yeni policy sonrası izole test sonucu aşağıdadır.
-  V010 değişiklikleri henüz commit/push edilmedi.
+  V010 değişiklikleri bu tasarımın ilk yazıldığı sırada henüz commit/push edilmemişti.
+  Sonrasında `4cb1fc1`, `42cc010`, `c5e291a` main'e gönderildi. `c5e291a` için
+  GitHub Actions sonucu 2026-11-05 tarihinde completed/success olarak doğrulandı.
 
 ## 2. Kapsam ve değişmeden kalacak sözleşmeler
 
@@ -252,3 +259,25 @@ bounded query/EXPLAIN. Güncel 521 Java/40 Python baseline korunur; yeni testler
   ve controller'lar; ardından inbox entegrasyonu ve review V011. Migration uygulama
   onayı ancak kesin SQL ve test hazırlığı tamamlanınca istenir.
 - Commit/push/force push yapılmadı. Diğer proje veya veritabanlarına dokunulmadı.
+
+## 11. Kaynak ve transaction temeli (2026-11-05)
+
+- `ClubSourceRef` tür ve pozitif kimliği birlikte taşır. EVENT 7 ile ANNOUNCEMENT 7
+  farklı kaynaklardır; cursor formatında enum ordinal yerine sabit tür etiketi vardır.
+- `ClubInteractionSource` yalnız Event/Announcement adapter'larına izin veren sealed
+  arayüzdür. Yeni yetkilendirme policy'sini kullanır; yönetici detail bypass'ını taşımaz.
+- `ClubInteractionWorkspace` mevcut repository'leri kullanır. Ön kontrol sonrasında
+  actor → club SHARE → source WRITE → university SHARE sırasıyla kilitler; profil,
+  üyelik, rol ve kaynak yaşam döngüsünü kilit altında yeniden kontrol eder.
+- Workspace `MANDATORY` transaction ister: çağıran servisin transaction'ına katılır,
+  bağımsız transaction açıp kilitleri erkenden bırakmaz. Read-only transaction'da
+  yazıcı çağrısı reddedilir. Announcement adapter'ı bağlı Event'i kilitlemez/döndürmez.
+- `ClubCommentCursor` kaynak türü/id, kök, zaman ve yorum id'sine bağlıdır; canonical
+  Base64URL, sürüm, zaman/nanos/kimlik sınırları kontrol edilir. Cursor erişim yetkisi
+  vermez; her çağrıda kaynak policy'si yine uygulanmalıdır.
+- Yeni 38 test ve eski 476 test birlikte **514 izole Java** olarak geçti; Python
+  **40** başarılı. Testler mock persistence kullanır; gerçek PG kilit garantisinin
+  kanıtı değildir. contextLoads/PG testleri bu oturumda çalıştırılmadı.
+- Yeni JPA entity veya SQL eklenmedi; V001–V010, Maven/CI target 10, validate ve
+  çalışan API'ler korunuyor. Sonraki adım entity/repository/service/controller ve
+  inbox entegrasyonu ile V011 review hazırlığıdır; SQL uygulaması ayrıca onay ister.

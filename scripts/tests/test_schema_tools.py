@@ -254,7 +254,7 @@ class SchemaToolsTest(unittest.TestCase):
     def test_unknown_schema_version_never_connects(self):
         with patch.object(tools, 'read_document') as read:
             with self.assertRaises(ValueError):
-                tools.inspect(self.env, 'existing', 'psql', 11)
+                tools.inspect(self.env, 'existing', 'psql', 999)
             read.assert_not_called()
 
     def test_v006_table_allowlist_does_not_weaken_structural_v005_comparison(self):

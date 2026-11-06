@@ -1,6 +1,14 @@
 package com.campusplus.backend.entity;
 import static com.campusplus.backend.entity.NotificationResource.*;
 public enum NotificationType {
+    EVENT_COMMENTED(EVENT_COMMENT,"Etkinliğe yeni bir yorum yapıldı."),
+    EVENT_COMMENT_REPLIED(EVENT_COMMENT,"Yorumunuza yeni bir yanıt geldi."),
+    EVENT_LIKED(EVENT,"Etkinlik beğenildi."),
+    EVENT_COMMENT_LIKED(EVENT_COMMENT,"Yorumunuz beğenildi."),
+    ANNOUNCEMENT_COMMENTED(ANNOUNCEMENT_COMMENT,"Duyuruya yeni bir yorum yapıldı."),
+    ANNOUNCEMENT_COMMENT_REPLIED(ANNOUNCEMENT_COMMENT,"Yorumunuza yeni bir yanıt geldi."),
+    ANNOUNCEMENT_LIKED(ANNOUNCEMENT,"Duyuru beğenildi."),
+    ANNOUNCEMENT_COMMENT_LIKED(ANNOUNCEMENT_COMMENT,"Yorumunuz beğenildi."),
     POST_COMMENTED(POST_COMMENT,"Gönderinize yeni bir yorum yapıldı."),
     COMMENT_REPLIED(POST_COMMENT,"Yorumunuza yeni bir yanıt geldi."),
     POST_LIKED(POST,"Gönderiniz beğenildi."),

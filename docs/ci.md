@@ -1,3 +1,10 @@
+> Event/Announcement etkileşim test aşaması (2026-11-06): workflow V005→V011 boş
+> kurulum, V011 kontrat ve dar yeni grant için güncellendi. 624 Java/44 Python ve
+> actionlint yerelde başarılı. Workflow henüz push edilmedi/uzakta çalıştırılmadı;
+> yerelde yeni boş cluster/DB veya Docker oluşturulmadı.
+> [Güncel test sonucu](club-interactions-test-validation.md).
+> Aşağıdaki sürüm notları tarihseldir.
+
 > Yorum/beğeni test DB aşaması (2026-11-02): workflow V005→V010 boş kurulum,
 > v010 kontrat ve dar comment/like grant için güncellendi. Yerelde 521 Java/40 Python
 > ve actionlint başarılı. Yeni workflow henüz push edilmedi/uzakta çalıştırılmadı.
@@ -61,7 +68,7 @@ kullanılır; sır dosyaları veya test çıktıları cache'e konmaz.
    gizli terminal istemleriyle SCRAM olarak atanır. SQL/komut argümanı literal'i yoktur.
    Workflow masking kayıtları ve GITHUB_ENV üzerinden aynı job'a aktarılır; repo veya
    kalıcı GitHub secret gerekmez. Yerel sır dosyaları okunmaz.
-6. Yalnız test hedefiyle Flyway V005→V010 migrate; V010 şema kontratı ve
+6. Yalnız test hedefiyle Flyway V005→V011 migrate; V011 şema kontratı ve
    managed SQL SHA-256 karşılaştırması; sonra temel/Event/Announcement/Notification/Post/Comment sınırlı runner
    grant'leri ve `-Ppostgres-it verify` çalışır. CI işi testten
    önce her seferinde boş DB kurduğu için kurulum yolunu da doğrular.

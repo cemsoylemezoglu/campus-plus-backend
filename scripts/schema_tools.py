@@ -21,6 +21,9 @@ TABLES_BY_VERSION = {
     10: frozenset(TABLES | {'events', 'event_participations', 'club_announcements', 'notifications', 'posts', 'post_moderation_actions',
                           'post_comments', 'post_likes', 'post_comment_likes', 'comment_moderation_actions'}),
 }
+TABLES_BY_VERSION[11] = TABLES_BY_VERSION[10] | frozenset({
+    'club_comments', 'club_content_likes', 'club_comment_likes', 'club_comment_moderation_actions',
+})
 
 # Manually reviewed on PostgreSQL 17.11 during the first empty V005 installation.
 # Re-parsing pg_get_constraintdef can push an array-wide text cast into each literal.
@@ -164,7 +167,7 @@ def main():
     commands = parser.add_subparsers(dest='command', required=True)
     inventory = commands.add_parser('inspect')
     inventory.add_argument('--target', choices=('existing', 'test'), required=True)
-    inventory.add_argument('--schema-version', type=int, choices=(5, 6, 7, 8, 9, 10), default=5,
+    inventory.add_argument('--schema-version', type=int, choices=(5, 6, 7, 8, 9, 10, 11), default=5,
                            help='Expected table set only; structural contract comparison is still required.')
     inventory.add_argument('--psql', default='psql')
     inventory.add_argument('--output', type=Path, required=True)

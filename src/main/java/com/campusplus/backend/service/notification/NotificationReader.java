@@ -16,7 +16,8 @@ public class NotificationReader {
     private final AnnouncementPolicy announcements;
     private final EventPolicy events;
     private final PostPolicy posts;
-    public NotificationReader(ClubWorkspace core,AnnouncementPolicy announcements,EventPolicy events,PostPolicy posts){this.core=core;this.announcements=announcements;this.events=events;this.posts=posts;}
+    public NotificationReader(ClubWorkspace core,AnnouncementPolicy announcements,EventPolicy events,PostPolicy posts){this.core=core;this.announcements=announcements;this.events=events;this.posts=posts;this.interactions=new ClubInteractionPolicy(core.policy);}
+    private final ClubInteractionPolicy interactions;
     public record Context(User actor,StudentProfile profile,Map<Long,ClubMembership> memberships) {}
     public Context context(List<Notification> values) {
         User actor=core.actor();var ids=values.stream().map(Notification::getClub).filter(Objects::nonNull).map(Club::getId).distinct().toList();
@@ -27,7 +28,7 @@ public class NotificationReader {
     public NotificationResponse response(Notification n,Context ctx) {
         if(!Objects.equals(n.getRecipientId(),ctx.actor().getId()))throw new ResourceNotFoundException("Bildirim bulunamadı.");
         Club c=n.getClub();ClubMembership local=c==null?null:ctx.memberships().get(c.getId());
-        Long source=null;Long eventId=null;Long postId=null;
+        Long source=null;Long eventId=null;Long postId=null;Long announcementId=null;
         var resource=n.getType().resource();
         if(resource==NotificationResource.POST||resource==NotificationResource.POST_COMMENT) {
             Post p=n.getPost();
@@ -35,6 +36,21 @@ public class NotificationReader {
                 if(resource==NotificationResource.POST){source=p.getId();postId=p.getId();}
                 else {PostComment comment=n.getComment();
                     if(comment!=null&&comment.getPost().getId().equals(p.getId())&&comment.visibleContent()){source=comment.getId();postId=p.getId();}}
+            }
+        } else if(c!=null&&(resource==NotificationResource.EVENT_COMMENT||resource==NotificationResource.ANNOUNCEMENT_COMMENT
+                ||n.getType()==NotificationType.EVENT_LIKED||n.getType()==NotificationType.ANNOUNCEMENT_LIKED)) {
+            Event e=n.getEvent();Announcement a=n.getAnnouncement();ClubComment comment=n.getClubComment();
+            boolean eventSource=resource==NotificationResource.EVENT_COMMENT||n.getType()==NotificationType.EVENT_LIKED;
+            if(eventSource&&e!=null&&a==null&&e.getClub().getId().equals(c.getId())&&interactions.readable(e,ctx.actor(),local,ctx.profile())) {
+                if(resource==NotificationResource.EVENT){source=e.getId();eventId=e.getId();}
+                else if(comment!=null&&comment.getEvent()!=null&&comment.getEvent().getId().equals(e.getId())&&comment.getAnnouncement()==null&&comment.visibleContent()) {
+                    source=comment.getId();eventId=e.getId();
+                }
+            } else if(!eventSource&&a!=null&&e==null&&a.getClub().getId().equals(c.getId())&&interactions.readable(a,ctx.actor(),local,ctx.profile())) {
+                if(resource==NotificationResource.ANNOUNCEMENT){source=a.getId();announcementId=a.getId();}
+                else if(comment!=null&&comment.getAnnouncement()!=null&&comment.getAnnouncement().getId().equals(a.getId())&&comment.getEvent()==null&&comment.visibleContent()) {
+                    source=comment.getId();announcementId=a.getId();
+                }
             }
         } else if(c!=null)switch(resource) {
             case CLUB -> {if(core.policy.visible(c,ctx.actor(),local))source=c.getId();}
@@ -62,6 +78,6 @@ public class NotificationReader {
         boolean available=source!=null;
         return new NotificationResponse(n.getId(),n.getType(),n.getCreatedAt(),n.getReadAt(),n.getVersion(),available,
             available?n.getType().message():"Bu bildirimin içeriğine artık erişilemiyor.",
-            available?new NotificationResponse.Target(n.getType().resource(),source,c==null?null:c.getId(),eventId,postId):null);
+            available?new NotificationResponse.Target(n.getType().resource(),source,c==null?null:c.getId(),eventId,postId,announcementId):null);
     }
 }

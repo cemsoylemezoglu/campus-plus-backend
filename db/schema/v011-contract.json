@@ -1,0 +1,4800 @@
+{
+  "schema": {
+    "tables": [
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "club_announcements",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "d",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "club_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "created_by",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "event_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "title",
+            "type": "character varying(200)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "body",
+            "type": "character varying(10000)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "audience",
+            "type": "character varying(24)",
+            "default": "'UNIVERSITY_STUDENTS'::character varying",
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "status",
+            "type": "character varying(16)",
+            "default": "'DRAFT'::character varying",
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "published_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "withdrawn_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "withdrawn_by",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "withdrawal_reason",
+            "type": "character varying(1000)",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "archived_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "version",
+            "type": "bigint",
+            "default": "0",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          }
+        ],
+        "indexes": [
+          {
+            "name": "club_announcements_pkey",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": true,
+            "definition": "CREATE UNIQUE INDEX club_announcements_pkey ON public.club_announcements USING btree (id)"
+          },
+          {
+            "name": "ix_club_announcements_club_status_published_id",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_club_announcements_club_status_published_id ON public.club_announcements USING btree (club_id, status, published_at DESC, id DESC)"
+          },
+          {
+            "name": "ix_club_announcements_creator",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_club_announcements_creator ON public.club_announcements USING btree (created_by)"
+          },
+          {
+            "name": "ix_club_announcements_discovery",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_club_announcements_discovery ON public.club_announcements USING btree (status, published_at DESC, id DESC) WHERE (archived_at IS NULL)"
+          },
+          {
+            "name": "ix_club_announcements_event",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_club_announcements_event ON public.club_announcements USING btree (event_id) WHERE (event_id IS NOT NULL)"
+          },
+          {
+            "name": "ix_club_announcements_withdrawer",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_club_announcements_withdrawer ON public.club_announcements USING btree (withdrawn_by) WHERE (withdrawn_by IS NOT NULL)"
+          }
+        ],
+        "forceRls": false,
+        "constraints": [
+          {
+            "kind": "c",
+            "name": "ck_club_announcements_archive",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((archived_at IS NULL) OR ((status)::text = ANY ((ARRAY['DRAFT'::character varying, 'WITHDRAWN'::character varying])::text[]))))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_announcements_audience",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((audience)::text = ANY ((ARRAY['UNIVERSITY_STUDENTS'::character varying, 'CLUB_MEMBERS'::character varying])::text[])))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_announcements_body",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((length(btrim((body)::text)) > 0))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_announcements_publication",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((((status)::text = 'DRAFT'::text) AND (published_at IS NULL)) OR (((status)::text = ANY ((ARRAY['PUBLISHED'::character varying, 'WITHDRAWN'::character varying])::text[])) AND (published_at IS NOT NULL))))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_announcements_status",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((status)::text = ANY ((ARRAY['DRAFT'::character varying, 'PUBLISHED'::character varying, 'WITHDRAWN'::character varying])::text[])))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_announcements_title",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((length(btrim((title)::text)) > 0))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_announcements_version",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((version >= 0))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_announcements_withdrawal",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((((status)::text = 'WITHDRAWN'::text) AND (withdrawn_at IS NOT NULL) AND (withdrawn_by IS NOT NULL) AND (withdrawal_reason IS NOT NULL) AND (length(btrim((withdrawal_reason)::text)) > 0)) OR (((status)::text <> 'WITHDRAWN'::text) AND (withdrawn_at IS NULL) AND (withdrawn_by IS NULL) AND (withdrawal_reason IS NULL))))"
+          },
+          {
+            "kind": "f",
+            "name": "club_announcements_club_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (club_id) REFERENCES clubs(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "club_announcements_created_by_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "club_announcements_event_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "p",
+            "name": "club_announcements_pkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "kind": "f",
+            "name": "club_announcements_withdrawn_by_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (withdrawn_by) REFERENCES users(id) ON DELETE RESTRICT"
+          }
+        ]
+      },
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "club_comment_likes",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "d",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "comment_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "user_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "active",
+            "type": "boolean",
+            "default": "true",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "version",
+            "type": "bigint",
+            "default": "0",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          }
+        ],
+        "indexes": [
+          {
+            "name": "club_comment_likes_pkey",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": true,
+            "definition": "CREATE UNIQUE INDEX club_comment_likes_pkey ON public.club_comment_likes USING btree (id)"
+          },
+          {
+            "name": "ix_club_comment_likes_active",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_club_comment_likes_active ON public.club_comment_likes USING btree (comment_id) WHERE (active = true)"
+          },
+          {
+            "name": "ix_club_comment_likes_user",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_club_comment_likes_user ON public.club_comment_likes USING btree (user_id)"
+          },
+          {
+            "name": "uq_club_comment_likes_user",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": false,
+            "definition": "CREATE UNIQUE INDEX uq_club_comment_likes_user ON public.club_comment_likes USING btree (comment_id, user_id)"
+          }
+        ],
+        "forceRls": false,
+        "constraints": [
+          {
+            "kind": "c",
+            "name": "ck_club_comment_likes_times",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((updated_at >= created_at))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_comment_likes_version",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((version >= 0))"
+          },
+          {
+            "kind": "f",
+            "name": "club_comment_likes_comment_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (comment_id) REFERENCES club_comments(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "p",
+            "name": "club_comment_likes_pkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "kind": "f",
+            "name": "club_comment_likes_user_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "u",
+            "name": "uq_club_comment_likes_user",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "UNIQUE (comment_id, user_id)"
+          }
+        ]
+      },
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "club_comment_moderation_actions",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "d",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "comment_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "actor_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "scope",
+            "type": "character varying(16)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "action",
+            "type": "character varying(16)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "reason",
+            "type": "character varying(1000)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "resulting_version",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          }
+        ],
+        "indexes": [
+          {
+            "name": "club_comment_moderation_actions_pkey",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": true,
+            "definition": "CREATE UNIQUE INDEX club_comment_moderation_actions_pkey ON public.club_comment_moderation_actions USING btree (id)"
+          },
+          {
+            "name": "ix_club_comment_moderation_actor",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_club_comment_moderation_actor ON public.club_comment_moderation_actions USING btree (actor_id)"
+          },
+          {
+            "name": "ix_club_comment_moderation_history",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_club_comment_moderation_history ON public.club_comment_moderation_actions USING btree (comment_id, id DESC)"
+          },
+          {
+            "name": "uq_club_comment_moderation_version",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": false,
+            "definition": "CREATE UNIQUE INDEX uq_club_comment_moderation_version ON public.club_comment_moderation_actions USING btree (comment_id, resulting_version)"
+          }
+        ],
+        "forceRls": false,
+        "constraints": [
+          {
+            "kind": "c",
+            "name": "ck_club_comment_moderation_action",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((action)::text = ANY ((ARRAY['HIDE'::character varying, 'RESTORE'::character varying])::text[])))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_comment_moderation_reason",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((length(btrim((reason)::text, ' \t\n\r'::text)) > 0))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_comment_moderation_scope",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((scope)::text = ANY ((ARRAY['RESOURCE'::character varying, 'PLATFORM'::character varying])::text[])))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_comment_moderation_version",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((resulting_version >= 0))"
+          },
+          {
+            "kind": "f",
+            "name": "club_comment_moderation_actions_actor_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (actor_id) REFERENCES users(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "club_comment_moderation_actions_comment_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (comment_id) REFERENCES club_comments(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "p",
+            "name": "club_comment_moderation_actions_pkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "kind": "u",
+            "name": "uq_club_comment_moderation_version",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "UNIQUE (comment_id, resulting_version)"
+          }
+        ]
+      },
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "club_comments",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "d",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "event_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "announcement_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "author_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "root_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "body",
+            "type": "character varying(3000)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "status",
+            "type": "character varying(16)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "resource_hidden",
+            "type": "boolean",
+            "default": "false",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "platform_hidden",
+            "type": "boolean",
+            "default": "false",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "removed_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "version",
+            "type": "bigint",
+            "default": "0",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          }
+        ],
+        "indexes": [
+          {
+            "name": "club_comments_pkey",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": true,
+            "definition": "CREATE UNIQUE INDEX club_comments_pkey ON public.club_comments USING btree (id)"
+          },
+          {
+            "name": "ix_club_comments_announcement",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_club_comments_announcement ON public.club_comments USING btree (announcement_id) WHERE (announcement_id IS NOT NULL)"
+          },
+          {
+            "name": "ix_club_comments_announcement_roots",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_club_comments_announcement_roots ON public.club_comments USING btree (announcement_id, created_at, id) WHERE ((root_id IS NULL) AND (announcement_id IS NOT NULL))"
+          },
+          {
+            "name": "ix_club_comments_author_id",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_club_comments_author_id ON public.club_comments USING btree (author_id, id DESC)"
+          },
+          {
+            "name": "ix_club_comments_event",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_club_comments_event ON public.club_comments USING btree (event_id) WHERE (event_id IS NOT NULL)"
+          },
+          {
+            "name": "ix_club_comments_event_roots",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_club_comments_event_roots ON public.club_comments USING btree (event_id, created_at, id) WHERE ((root_id IS NULL) AND (event_id IS NOT NULL))"
+          },
+          {
+            "name": "ix_club_comments_replies",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_club_comments_replies ON public.club_comments USING btree (root_id, created_at, id) WHERE (root_id IS NOT NULL)"
+          },
+          {
+            "name": "uq_club_comments_id_announcement",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": false,
+            "definition": "CREATE UNIQUE INDEX uq_club_comments_id_announcement ON public.club_comments USING btree (id, announcement_id)"
+          },
+          {
+            "name": "uq_club_comments_id_event",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": false,
+            "definition": "CREATE UNIQUE INDEX uq_club_comments_id_event ON public.club_comments USING btree (id, event_id)"
+          }
+        ],
+        "forceRls": false,
+        "constraints": [
+          {
+            "kind": "c",
+            "name": "ck_club_comments_body",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((length(btrim((body)::text, ' \t\n\r'::text)) > 0))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_comments_lifecycle",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((((status)::text = 'ACTIVE'::text) AND (removed_at IS NULL)) OR (((status)::text = 'REMOVED'::text) AND (removed_at IS NOT NULL))))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_comments_root",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((root_id IS NULL) OR (root_id <> id)))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_comments_source",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((((event_id IS NOT NULL))::integer + ((announcement_id IS NOT NULL))::integer) = 1))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_comments_status",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((status)::text = ANY ((ARRAY['ACTIVE'::character varying, 'REMOVED'::character varying])::text[])))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_comments_times",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((updated_at >= created_at) AND ((removed_at IS NULL) OR ((removed_at >= created_at) AND (updated_at >= removed_at)))))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_comments_version",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((version >= 0))"
+          },
+          {
+            "kind": "f",
+            "name": "club_comments_announcement_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (announcement_id) REFERENCES club_announcements(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "club_comments_author_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "club_comments_event_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "p",
+            "name": "club_comments_pkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "kind": "f",
+            "name": "fk_club_comments_root",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (root_id) REFERENCES club_comments(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "fk_club_comments_root_announcement",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (root_id, announcement_id) REFERENCES club_comments(id, announcement_id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "fk_club_comments_root_event",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (root_id, event_id) REFERENCES club_comments(id, event_id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "u",
+            "name": "uq_club_comments_id_announcement",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "UNIQUE (id, announcement_id)"
+          },
+          {
+            "kind": "u",
+            "name": "uq_club_comments_id_event",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "UNIQUE (id, event_id)"
+          }
+        ]
+      },
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "club_content_likes",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "d",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "event_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "announcement_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "user_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "active",
+            "type": "boolean",
+            "default": "true",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "version",
+            "type": "bigint",
+            "default": "0",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          }
+        ],
+        "indexes": [
+          {
+            "name": "club_content_likes_pkey",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": true,
+            "definition": "CREATE UNIQUE INDEX club_content_likes_pkey ON public.club_content_likes USING btree (id)"
+          },
+          {
+            "name": "ix_club_content_likes_announcement_active",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_club_content_likes_announcement_active ON public.club_content_likes USING btree (announcement_id) WHERE ((active = true) AND (announcement_id IS NOT NULL))"
+          },
+          {
+            "name": "ix_club_content_likes_event_active",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_club_content_likes_event_active ON public.club_content_likes USING btree (event_id) WHERE ((active = true) AND (event_id IS NOT NULL))"
+          },
+          {
+            "name": "ix_club_content_likes_user",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_club_content_likes_user ON public.club_content_likes USING btree (user_id)"
+          },
+          {
+            "name": "uq_club_content_likes_announcement_user",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": false,
+            "definition": "CREATE UNIQUE INDEX uq_club_content_likes_announcement_user ON public.club_content_likes USING btree (announcement_id, user_id)"
+          },
+          {
+            "name": "uq_club_content_likes_event_user",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": false,
+            "definition": "CREATE UNIQUE INDEX uq_club_content_likes_event_user ON public.club_content_likes USING btree (event_id, user_id)"
+          }
+        ],
+        "forceRls": false,
+        "constraints": [
+          {
+            "kind": "c",
+            "name": "ck_club_content_likes_source",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((((event_id IS NOT NULL))::integer + ((announcement_id IS NOT NULL))::integer) = 1))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_content_likes_times",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((updated_at >= created_at))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_content_likes_version",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((version >= 0))"
+          },
+          {
+            "kind": "f",
+            "name": "club_content_likes_announcement_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (announcement_id) REFERENCES club_announcements(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "club_content_likes_event_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "p",
+            "name": "club_content_likes_pkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "kind": "f",
+            "name": "club_content_likes_user_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "u",
+            "name": "uq_club_content_likes_announcement_user",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "UNIQUE (announcement_id, user_id)"
+          },
+          {
+            "kind": "u",
+            "name": "uq_club_content_likes_event_user",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "UNIQUE (event_id, user_id)"
+          }
+        ]
+      },
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "club_memberships",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "d",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "club_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "user_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "role",
+            "type": "character varying(16)",
+            "default": "'MEMBER'::character varying",
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "status",
+            "type": "character varying(16)",
+            "default": "'PENDING'::character varying",
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "requested_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "joined_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "ended_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "reviewed_by",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "reviewed_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "decision_reason",
+            "type": "character varying(1000)",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "version",
+            "type": "bigint",
+            "default": "0",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          }
+        ],
+        "indexes": [
+          {
+            "name": "club_memberships_pkey",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": true,
+            "definition": "CREATE UNIQUE INDEX club_memberships_pkey ON public.club_memberships USING btree (id)"
+          },
+          {
+            "name": "ix_club_memberships_club_status_role_id",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_club_memberships_club_status_role_id ON public.club_memberships USING btree (club_id, status, role, id)"
+          },
+          {
+            "name": "ix_club_memberships_user_status_id",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_club_memberships_user_status_id ON public.club_memberships USING btree (user_id, status, id)"
+          },
+          {
+            "name": "uq_club_memberships_club_user",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": false,
+            "definition": "CREATE UNIQUE INDEX uq_club_memberships_club_user ON public.club_memberships USING btree (club_id, user_id)"
+          },
+          {
+            "name": "uq_club_single_active_owner",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": false,
+            "definition": "CREATE UNIQUE INDEX uq_club_single_active_owner ON public.club_memberships USING btree (club_id) WHERE (((role)::text = 'OWNER'::text) AND ((status)::text = 'ACTIVE'::text))"
+          }
+        ],
+        "forceRls": false,
+        "constraints": [
+          {
+            "kind": "c",
+            "name": "ck_club_memberships_active_joined",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((((status)::text <> 'ACTIVE'::text) OR (joined_at IS NOT NULL)))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_memberships_active_role",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((((status)::text = 'ACTIVE'::text) OR ((role)::text = 'MEMBER'::text)))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_memberships_role",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((role)::text = ANY (ARRAY[('MEMBER'::character varying)::text, ('MANAGER'::character varying)::text, ('OWNER'::character varying)::text])))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_memberships_status",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((status)::text = ANY (ARRAY[('PENDING'::character varying)::text, ('ACTIVE'::character varying)::text, ('REJECTED'::character varying)::text, ('LEFT'::character varying)::text, ('REMOVED'::character varying)::text, ('SUSPENDED'::character varying)::text])))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_club_memberships_version",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((version >= 0))"
+          },
+          {
+            "kind": "f",
+            "name": "club_memberships_club_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (club_id) REFERENCES clubs(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "p",
+            "name": "club_memberships_pkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "kind": "f",
+            "name": "club_memberships_reviewed_by_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "club_memberships_user_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (user_id) REFERENCES student_profiles(user_id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "u",
+            "name": "uq_club_memberships_club_user",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "UNIQUE (club_id, user_id)"
+          }
+        ]
+      },
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "clubs",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "d",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "university_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "created_by",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "name",
+            "type": "character varying(150)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "slug",
+            "type": "character varying(100)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "description",
+            "type": "character varying(5000)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "logo_url",
+            "type": "character varying(500)",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "status",
+            "type": "character varying(24)",
+            "default": "'PENDING_APPROVAL'::character varying",
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "review_note",
+            "type": "character varying(1000)",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "reviewed_by",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "reviewed_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "version",
+            "type": "bigint",
+            "default": "0",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          }
+        ],
+        "indexes": [
+          {
+            "name": "clubs_pkey",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": true,
+            "definition": "CREATE UNIQUE INDEX clubs_pkey ON public.clubs USING btree (id)"
+          },
+          {
+            "name": "ix_clubs_status_id",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_clubs_status_id ON public.clubs USING btree (status, id)"
+          },
+          {
+            "name": "ix_clubs_university_status_id",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_clubs_university_status_id ON public.clubs USING btree (university_id, status, id)"
+          },
+          {
+            "name": "uq_clubs_id_university",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": false,
+            "definition": "CREATE UNIQUE INDEX uq_clubs_id_university ON public.clubs USING btree (id, university_id)"
+          },
+          {
+            "name": "uq_clubs_university_slug",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": false,
+            "definition": "CREATE UNIQUE INDEX uq_clubs_university_slug ON public.clubs USING btree (university_id, slug)"
+          }
+        ],
+        "forceRls": false,
+        "constraints": [
+          {
+            "kind": "c",
+            "name": "ck_clubs_description",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((length(btrim((description)::text)) > 0))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_clubs_name",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((length(btrim((name)::text)) > 0))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_clubs_slug",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((slug)::text ~ '^[a-z0-9]+(-[a-z0-9]+)*$'::text))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_clubs_status",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((status)::text = ANY (ARRAY[('PENDING_APPROVAL'::character varying)::text, ('ACTIVE'::character varying)::text, ('REJECTED'::character varying)::text, ('SUSPENDED'::character varying)::text, ('ARCHIVED'::character varying)::text])))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_clubs_version",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((version >= 0))"
+          },
+          {
+            "kind": "f",
+            "name": "clubs_created_by_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "p",
+            "name": "clubs_pkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "kind": "f",
+            "name": "clubs_reviewed_by_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "clubs_university_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (university_id) REFERENCES universities(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "u",
+            "name": "uq_clubs_id_university",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "UNIQUE (id, university_id)"
+          },
+          {
+            "kind": "u",
+            "name": "uq_clubs_university_slug",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "UNIQUE (university_id, slug)"
+          }
+        ]
+      },
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "comment_moderation_actions",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "d",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "comment_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "actor_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "scope",
+            "type": "character varying(16)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "action",
+            "type": "character varying(16)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "reason",
+            "type": "character varying(1000)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "resulting_version",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          }
+        ],
+        "indexes": [
+          {
+            "name": "comment_moderation_actions_pkey",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": true,
+            "definition": "CREATE UNIQUE INDEX comment_moderation_actions_pkey ON public.comment_moderation_actions USING btree (id)"
+          },
+          {
+            "name": "ix_comment_moderation_actor",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_comment_moderation_actor ON public.comment_moderation_actions USING btree (actor_id)"
+          },
+          {
+            "name": "ix_comment_moderation_history",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_comment_moderation_history ON public.comment_moderation_actions USING btree (comment_id, id DESC)"
+          },
+          {
+            "name": "uq_comment_moderation_version",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": false,
+            "definition": "CREATE UNIQUE INDEX uq_comment_moderation_version ON public.comment_moderation_actions USING btree (comment_id, resulting_version)"
+          }
+        ],
+        "forceRls": false,
+        "constraints": [
+          {
+            "kind": "c",
+            "name": "ck_comment_moderation_action",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((action)::text = ANY ((ARRAY['HIDE'::character varying, 'RESTORE'::character varying])::text[])))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_comment_moderation_reason",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((length(btrim((reason)::text, ' \t\n\r'::text)) > 0))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_comment_moderation_scope",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((scope)::text = ANY ((ARRAY['RESOURCE'::character varying, 'PLATFORM'::character varying])::text[])))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_comment_moderation_version",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((resulting_version >= 0))"
+          },
+          {
+            "kind": "f",
+            "name": "comment_moderation_actions_actor_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (actor_id) REFERENCES users(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "comment_moderation_actions_comment_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (comment_id) REFERENCES post_comments(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "p",
+            "name": "comment_moderation_actions_pkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "kind": "u",
+            "name": "uq_comment_moderation_version",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "UNIQUE (comment_id, resulting_version)"
+          }
+        ]
+      },
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "event_participations",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "d",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "event_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "user_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "status",
+            "type": "character varying(16)",
+            "default": "'REGISTERED'::character varying",
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "registered_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "ended_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "ended_by",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "end_cause",
+            "type": "character varying(32)",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "decision_reason",
+            "type": "character varying(1000)",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "checked_in_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "checked_in_by",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "version",
+            "type": "bigint",
+            "default": "0",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          }
+        ],
+        "indexes": [
+          {
+            "name": "event_participations_pkey",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": true,
+            "definition": "CREATE UNIQUE INDEX event_participations_pkey ON public.event_participations USING btree (id)"
+          },
+          {
+            "name": "ix_event_participations_checked_in_by",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_event_participations_checked_in_by ON public.event_participations USING btree (checked_in_by) WHERE (checked_in_by IS NOT NULL)"
+          },
+          {
+            "name": "ix_event_participations_ended_by",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_event_participations_ended_by ON public.event_participations USING btree (ended_by) WHERE (ended_by IS NOT NULL)"
+          },
+          {
+            "name": "ix_event_participations_event_status_id",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_event_participations_event_status_id ON public.event_participations USING btree (event_id, status, id)"
+          },
+          {
+            "name": "ix_event_participations_user_id",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_event_participations_user_id ON public.event_participations USING btree (user_id, id)"
+          },
+          {
+            "name": "ix_event_participations_user_status_event",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_event_participations_user_status_event ON public.event_participations USING btree (user_id, status, event_id)"
+          },
+          {
+            "name": "uq_event_participations_event_user",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": false,
+            "definition": "CREATE UNIQUE INDEX uq_event_participations_event_user ON public.event_participations USING btree (event_id, user_id)"
+          }
+        ],
+        "forceRls": false,
+        "constraints": [
+          {
+            "kind": "c",
+            "name": "ck_event_participations_cause",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((end_cause)::text = ANY ((ARRAY['SELF_CANCELLED'::character varying, 'EVENT_CANCELLED'::character varying, 'MEMBERSHIP_ENDED'::character varying, 'CLUB_ARCHIVED'::character varying, 'REMOVED'::character varying, 'REAPPLICATION_ALLOWED'::character varying, 'NO_SHOW'::character varying])::text[])))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_event_participations_end_cause",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((((status)::text = 'CANCELLED'::text) AND ((end_cause)::text = ANY ((ARRAY['SELF_CANCELLED'::character varying, 'EVENT_CANCELLED'::character varying, 'MEMBERSHIP_ENDED'::character varying, 'CLUB_ARCHIVED'::character varying, 'REAPPLICATION_ALLOWED'::character varying])::text[]))) OR (((status)::text = 'REMOVED'::text) AND ((end_cause)::text = 'REMOVED'::text) AND (decision_reason IS NOT NULL) AND (length(btrim((decision_reason)::text)) > 0)) OR (((status)::text = 'NO_SHOW'::text) AND ((end_cause)::text = 'NO_SHOW'::text)) OR ((status)::text = ANY ((ARRAY['REGISTERED'::character varying, 'ATTENDED'::character varying])::text[]))))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_event_participations_state",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((((status)::text = 'REGISTERED'::text) AND (ended_at IS NULL) AND (ended_by IS NULL) AND (end_cause IS NULL) AND (decision_reason IS NULL) AND (checked_in_at IS NULL) AND (checked_in_by IS NULL)) OR (((status)::text = 'ATTENDED'::text) AND (ended_at IS NULL) AND (ended_by IS NULL) AND (end_cause IS NULL) AND (decision_reason IS NULL) AND (checked_in_at IS NOT NULL) AND (checked_in_by IS NOT NULL)) OR (((status)::text = ANY ((ARRAY['CANCELLED'::character varying, 'REMOVED'::character varying, 'NO_SHOW'::character varying])::text[])) AND (ended_at IS NOT NULL) AND (ended_by IS NOT NULL) AND (end_cause IS NOT NULL) AND (checked_in_at IS NULL) AND (checked_in_by IS NULL))))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_event_participations_status",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((status)::text = ANY ((ARRAY['REGISTERED'::character varying, 'CANCELLED'::character varying, 'REMOVED'::character varying, 'ATTENDED'::character varying, 'NO_SHOW'::character varying])::text[])))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_event_participations_version",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((version >= 0))"
+          },
+          {
+            "kind": "f",
+            "name": "event_participations_checked_in_by_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (checked_in_by) REFERENCES users(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "event_participations_ended_by_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (ended_by) REFERENCES users(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "event_participations_event_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "p",
+            "name": "event_participations_pkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "kind": "f",
+            "name": "event_participations_user_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (user_id) REFERENCES student_profiles(user_id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "u",
+            "name": "uq_event_participations_event_user",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "UNIQUE (event_id, user_id)"
+          }
+        ]
+      },
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "events",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "d",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "club_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "created_by",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "title",
+            "type": "character varying(200)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "description",
+            "type": "character varying(10000)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "venue",
+            "type": "character varying(500)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "cover_url",
+            "type": "character varying(500)",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "status",
+            "type": "character varying(20)",
+            "default": "'DRAFT'::character varying",
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "audience",
+            "type": "character varying(24)",
+            "default": "'UNIVERSITY_STUDENTS'::character varying",
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "capacity",
+            "type": "integer",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "registration_opens_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "registration_closes_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "starts_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "ends_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "time_zone",
+            "type": "character varying(64)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "published_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "cancelled_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "cancelled_by",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "cancellation_reason",
+            "type": "character varying(1000)",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "completed_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "archived_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "schedule_changed_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "schedule_change_reason",
+            "type": "character varying(1000)",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "version",
+            "type": "bigint",
+            "default": "0",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          }
+        ],
+        "indexes": [
+          {
+            "name": "events_pkey",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": true,
+            "definition": "CREATE UNIQUE INDEX events_pkey ON public.events USING btree (id)"
+          },
+          {
+            "name": "ix_events_cancelled_by",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_events_cancelled_by ON public.events USING btree (cancelled_by) WHERE (cancelled_by IS NOT NULL)"
+          },
+          {
+            "name": "ix_events_club_status_start_id",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_events_club_status_start_id ON public.events USING btree (club_id, status, starts_at, id)"
+          },
+          {
+            "name": "ix_events_created_by",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_events_created_by ON public.events USING btree (created_by)"
+          },
+          {
+            "name": "ix_events_discovery",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_events_discovery ON public.events USING btree (status, starts_at, id) WHERE (archived_at IS NULL)"
+          }
+        ],
+        "forceRls": false,
+        "constraints": [
+          {
+            "kind": "c",
+            "name": "ck_events_archived",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((archived_at IS NULL) OR ((status)::text = ANY ((ARRAY['CANCELLED'::character varying, 'COMPLETED'::character varying])::text[]))))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_events_audience",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((audience)::text = ANY ((ARRAY['UNIVERSITY_STUDENTS'::character varying, 'CLUB_MEMBERS'::character varying])::text[])))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_events_cancelled",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((((status)::text = 'CANCELLED'::text) AND (cancelled_at IS NOT NULL) AND (cancelled_by IS NOT NULL) AND (cancellation_reason IS NOT NULL) AND (length(btrim((cancellation_reason)::text)) > 0)) OR (((status)::text <> 'CANCELLED'::text) AND (cancelled_at IS NULL) AND (cancelled_by IS NULL) AND (cancellation_reason IS NULL))))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_events_capacity",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((capacity IS NULL) OR (capacity > 0)))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_events_completed",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((((status)::text = 'COMPLETED'::text) AND (completed_at IS NOT NULL)) OR (((status)::text <> 'COMPLETED'::text) AND (completed_at IS NULL))))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_events_description",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((length(btrim((description)::text)) > 0))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_events_published",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((((status)::text <> ALL ((ARRAY['PUBLISHED'::character varying, 'COMPLETED'::character varying])::text[])) OR (published_at IS NOT NULL)) AND (((status)::text <> 'DRAFT'::text) OR (published_at IS NULL))))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_events_reschedule_reason",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((schedule_change_reason IS NULL) OR (schedule_changed_at IS NOT NULL)))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_events_schedule",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((registration_opens_at < registration_closes_at) AND (registration_closes_at <= starts_at) AND (starts_at < ends_at)))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_events_status",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((status)::text = ANY ((ARRAY['DRAFT'::character varying, 'PUBLISHED'::character varying, 'CANCELLED'::character varying, 'COMPLETED'::character varying])::text[])))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_events_time_zone",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((length(btrim((time_zone)::text)) > 0))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_events_title",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((length(btrim((title)::text)) > 0))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_events_venue",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((length(btrim((venue)::text)) > 0))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_events_version",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((version >= 0))"
+          },
+          {
+            "kind": "f",
+            "name": "events_cancelled_by_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (cancelled_by) REFERENCES users(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "events_club_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (club_id) REFERENCES clubs(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "events_created_by_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "p",
+            "name": "events_pkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "PRIMARY KEY (id)"
+          }
+        ]
+      },
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "notifications",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "d",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "recipient_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "actor_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "type",
+            "type": "character varying(64)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "source_key",
+            "type": "character varying(200)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "club_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "announcement_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "event_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "participation_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "membership_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "read_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "version",
+            "type": "bigint",
+            "default": "0",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "post_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "comment_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "club_comment_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          }
+        ],
+        "indexes": [
+          {
+            "name": "ix_notifications_actor",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_notifications_actor ON public.notifications USING btree (actor_id) WHERE (actor_id IS NOT NULL)"
+          },
+          {
+            "name": "ix_notifications_announcement",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_notifications_announcement ON public.notifications USING btree (announcement_id) WHERE (announcement_id IS NOT NULL)"
+          },
+          {
+            "name": "ix_notifications_club",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_notifications_club ON public.notifications USING btree (club_id) WHERE (club_id IS NOT NULL)"
+          },
+          {
+            "name": "ix_notifications_club_comment",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_notifications_club_comment ON public.notifications USING btree (club_comment_id) WHERE (club_comment_id IS NOT NULL)"
+          },
+          {
+            "name": "ix_notifications_comment",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_notifications_comment ON public.notifications USING btree (comment_id) WHERE (comment_id IS NOT NULL)"
+          },
+          {
+            "name": "ix_notifications_event",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_notifications_event ON public.notifications USING btree (event_id) WHERE (event_id IS NOT NULL)"
+          },
+          {
+            "name": "ix_notifications_membership",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_notifications_membership ON public.notifications USING btree (membership_id) WHERE (membership_id IS NOT NULL)"
+          },
+          {
+            "name": "ix_notifications_participation",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_notifications_participation ON public.notifications USING btree (participation_id) WHERE (participation_id IS NOT NULL)"
+          },
+          {
+            "name": "ix_notifications_post",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_notifications_post ON public.notifications USING btree (post_id) WHERE (post_id IS NOT NULL)"
+          },
+          {
+            "name": "ix_notifications_recipient_created_id",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_notifications_recipient_created_id ON public.notifications USING btree (recipient_id, created_at DESC, id DESC)"
+          },
+          {
+            "name": "ix_notifications_unread",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_notifications_unread ON public.notifications USING btree (recipient_id, created_at DESC, id DESC) WHERE (read_at IS NULL)"
+          },
+          {
+            "name": "notifications_pkey",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": true,
+            "definition": "CREATE UNIQUE INDEX notifications_pkey ON public.notifications USING btree (id)"
+          },
+          {
+            "name": "uq_notifications_recipient_source",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": false,
+            "definition": "CREATE UNIQUE INDEX uq_notifications_recipient_source ON public.notifications USING btree (recipient_id, source_key)"
+          }
+        ],
+        "forceRls": false,
+        "constraints": [
+          {
+            "kind": "c",
+            "name": "ck_notifications_read_at",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((read_at IS NULL) OR (read_at >= created_at)))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_notifications_source",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((((club_comment_id IS NULL) AND (((post_id IS NULL) AND (comment_id IS NULL) AND ((((type)::text = ANY ((ARRAY['CLUB_APPROVED'::character varying, 'CLUB_REJECTED'::character varying, 'CLUB_SUSPENDED'::character varying, 'CLUB_RESTORED'::character varying, 'CLUB_ARCHIVED'::character varying])::text[])) AND (club_id IS NOT NULL) AND (announcement_id IS NULL) AND (event_id IS NULL) AND (participation_id IS NULL) AND (membership_id IS NULL)) OR (((type)::text = ANY ((ARRAY['MEMBERSHIP_REQUESTED'::character varying, 'MEMBERSHIP_APPROVED'::character varying, 'MEMBERSHIP_REJECTED'::character varying, 'MEMBERSHIP_REMOVED'::character varying, 'MEMBERSHIP_REAPPLICATION_ALLOWED'::character varying, 'MEMBERSHIP_SUSPENDED'::character varying, 'MEMBERSHIP_RESTORED'::character varying, 'MEMBERSHIP_ROLE_CHANGED'::character varying, 'MEMBERSHIP_OWNERSHIP_TRANSFERRED'::character varying])::text[])) AND (club_id IS NOT NULL) AND (announcement_id IS NULL) AND (event_id IS NULL) AND (participation_id IS NULL) AND (membership_id IS NOT NULL)) OR (((type)::text = 'ANNOUNCEMENT_PUBLISHED'::text) AND (club_id IS NOT NULL) AND (announcement_id IS NOT NULL) AND (event_id IS NULL) AND (participation_id IS NULL) AND (membership_id IS NULL)) OR (((type)::text = ANY ((ARRAY['EVENT_PUBLISHED'::character varying, 'EVENT_RESCHEDULED'::character varying, 'EVENT_CANCELLED'::character varying])::text[])) AND (club_id IS NOT NULL) AND (announcement_id IS NULL) AND (event_id IS NOT NULL) AND (participation_id IS NULL) AND (membership_id IS NULL)) OR (((type)::text = ANY ((ARRAY['PARTICIPATION_REGISTERED'::character varying, 'PARTICIPATION_CHECKED_IN'::character varying, 'PARTICIPATION_REMOVED'::character varying, 'PARTICIPATION_REAPPLICATION_ALLOWED'::character varying, 'PARTICIPATION_CANCELLED'::character varying])::text[])) AND (club_id IS NOT NULL) AND (announcement_id IS NULL) AND (event_id IS NOT NULL) AND (participation_id IS NOT NULL) AND (membership_id IS NULL)))) OR ((post_id IS NOT NULL) AND (announcement_id IS NULL) AND (event_id IS NULL) AND (participation_id IS NULL) AND (membership_id IS NULL) AND ((((type)::text = 'POST_LIKED'::text) AND (comment_id IS NULL)) OR (((type)::text = ANY ((ARRAY['POST_COMMENTED'::character varying, 'COMMENT_REPLIED'::character varying, 'COMMENT_LIKED'::character varying])::text[])) AND (comment_id IS NOT NULL)))))) OR ((club_id IS NOT NULL) AND (event_id IS NOT NULL) AND (announcement_id IS NULL) AND (membership_id IS NULL) AND (participation_id IS NULL) AND (post_id IS NULL) AND (comment_id IS NULL) AND ((((type)::text = 'EVENT_LIKED'::text) AND (club_comment_id IS NULL)) OR (((type)::text = ANY ((ARRAY['EVENT_COMMENTED'::character varying, 'EVENT_COMMENT_REPLIED'::character varying, 'EVENT_COMMENT_LIKED'::character varying])::text[])) AND (club_comment_id IS NOT NULL)))) OR ((club_id IS NOT NULL) AND (announcement_id IS NOT NULL) AND (event_id IS NULL) AND (membership_id IS NULL) AND (participation_id IS NULL) AND (post_id IS NULL) AND (comment_id IS NULL) AND ((((type)::text = 'ANNOUNCEMENT_LIKED'::text) AND (club_comment_id IS NULL)) OR (((type)::text = ANY ((ARRAY['ANNOUNCEMENT_COMMENTED'::character varying, 'ANNOUNCEMENT_COMMENT_REPLIED'::character varying, 'ANNOUNCEMENT_COMMENT_LIKED'::character varying])::text[])) AND (club_comment_id IS NOT NULL))))))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_notifications_source_key",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((length(btrim((source_key)::text)) > 0))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_notifications_type",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((type)::text = ANY ((ARRAY['POST_COMMENTED'::character varying, 'COMMENT_REPLIED'::character varying, 'POST_LIKED'::character varying, 'COMMENT_LIKED'::character varying, 'ANNOUNCEMENT_PUBLISHED'::character varying, 'CLUB_APPROVED'::character varying, 'CLUB_REJECTED'::character varying, 'CLUB_SUSPENDED'::character varying, 'CLUB_RESTORED'::character varying, 'CLUB_ARCHIVED'::character varying, 'MEMBERSHIP_REQUESTED'::character varying, 'MEMBERSHIP_APPROVED'::character varying, 'MEMBERSHIP_REJECTED'::character varying, 'MEMBERSHIP_REMOVED'::character varying, 'MEMBERSHIP_REAPPLICATION_ALLOWED'::character varying, 'MEMBERSHIP_SUSPENDED'::character varying, 'MEMBERSHIP_RESTORED'::character varying, 'MEMBERSHIP_ROLE_CHANGED'::character varying, 'MEMBERSHIP_OWNERSHIP_TRANSFERRED'::character varying, 'EVENT_PUBLISHED'::character varying, 'EVENT_RESCHEDULED'::character varying, 'EVENT_CANCELLED'::character varying, 'PARTICIPATION_REGISTERED'::character varying, 'PARTICIPATION_CHECKED_IN'::character varying, 'PARTICIPATION_REMOVED'::character varying, 'PARTICIPATION_REAPPLICATION_ALLOWED'::character varying, 'PARTICIPATION_CANCELLED'::character varying, 'EVENT_COMMENTED'::character varying, 'EVENT_COMMENT_REPLIED'::character varying, 'EVENT_LIKED'::character varying, 'EVENT_COMMENT_LIKED'::character varying, 'ANNOUNCEMENT_COMMENTED'::character varying, 'ANNOUNCEMENT_COMMENT_REPLIED'::character varying, 'ANNOUNCEMENT_LIKED'::character varying, 'ANNOUNCEMENT_COMMENT_LIKED'::character varying])::text[])))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_notifications_version",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((version >= 0))"
+          },
+          {
+            "kind": "f",
+            "name": "fk_notifications_club_comment_announcement",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (club_comment_id, announcement_id) REFERENCES club_comments(id, announcement_id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "fk_notifications_club_comment_event",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (club_comment_id, event_id) REFERENCES club_comments(id, event_id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "fk_notifications_comment_post",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (comment_id, post_id) REFERENCES post_comments(id, post_id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "notifications_actor_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (actor_id) REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "kind": "f",
+            "name": "notifications_announcement_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (announcement_id) REFERENCES club_announcements(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "notifications_club_comment_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (club_comment_id) REFERENCES club_comments(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "notifications_club_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (club_id) REFERENCES clubs(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "notifications_comment_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (comment_id) REFERENCES post_comments(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "notifications_event_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "notifications_membership_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (membership_id) REFERENCES club_memberships(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "notifications_participation_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (participation_id) REFERENCES event_participations(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "p",
+            "name": "notifications_pkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "kind": "f",
+            "name": "notifications_post_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "notifications_recipient_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "kind": "u",
+            "name": "uq_notifications_recipient_source",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "UNIQUE (recipient_id, source_key)"
+          }
+        ]
+      },
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "post_comment_likes",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "d",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "comment_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "user_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "active",
+            "type": "boolean",
+            "default": "true",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "version",
+            "type": "bigint",
+            "default": "0",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          }
+        ],
+        "indexes": [
+          {
+            "name": "ix_post_comment_likes_active",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_post_comment_likes_active ON public.post_comment_likes USING btree (comment_id) WHERE (active = true)"
+          },
+          {
+            "name": "ix_post_comment_likes_user",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_post_comment_likes_user ON public.post_comment_likes USING btree (user_id)"
+          },
+          {
+            "name": "post_comment_likes_pkey",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": true,
+            "definition": "CREATE UNIQUE INDEX post_comment_likes_pkey ON public.post_comment_likes USING btree (id)"
+          },
+          {
+            "name": "uq_post_comment_likes_user",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": false,
+            "definition": "CREATE UNIQUE INDEX uq_post_comment_likes_user ON public.post_comment_likes USING btree (comment_id, user_id)"
+          }
+        ],
+        "forceRls": false,
+        "constraints": [
+          {
+            "kind": "c",
+            "name": "ck_post_comment_likes_times",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((updated_at >= created_at))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_post_comment_likes_version",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((version >= 0))"
+          },
+          {
+            "kind": "f",
+            "name": "post_comment_likes_comment_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (comment_id) REFERENCES post_comments(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "p",
+            "name": "post_comment_likes_pkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "kind": "f",
+            "name": "post_comment_likes_user_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "u",
+            "name": "uq_post_comment_likes_user",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "UNIQUE (comment_id, user_id)"
+          }
+        ]
+      },
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "post_comments",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "d",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "post_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "author_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "root_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "body",
+            "type": "character varying(3000)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "status",
+            "type": "character varying(16)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "resource_hidden",
+            "type": "boolean",
+            "default": "false",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "platform_hidden",
+            "type": "boolean",
+            "default": "false",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "removed_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "version",
+            "type": "bigint",
+            "default": "0",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          }
+        ],
+        "indexes": [
+          {
+            "name": "ix_post_comments_author_id",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_post_comments_author_id ON public.post_comments USING btree (author_id, id DESC)"
+          },
+          {
+            "name": "ix_post_comments_post",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_post_comments_post ON public.post_comments USING btree (post_id)"
+          },
+          {
+            "name": "ix_post_comments_replies",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_post_comments_replies ON public.post_comments USING btree (root_id, created_at, id) WHERE (root_id IS NOT NULL)"
+          },
+          {
+            "name": "ix_post_comments_roots",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_post_comments_roots ON public.post_comments USING btree (post_id, created_at, id) WHERE (root_id IS NULL)"
+          },
+          {
+            "name": "post_comments_pkey",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": true,
+            "definition": "CREATE UNIQUE INDEX post_comments_pkey ON public.post_comments USING btree (id)"
+          },
+          {
+            "name": "uq_post_comments_id_post",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": false,
+            "definition": "CREATE UNIQUE INDEX uq_post_comments_id_post ON public.post_comments USING btree (id, post_id)"
+          }
+        ],
+        "forceRls": false,
+        "constraints": [
+          {
+            "kind": "c",
+            "name": "ck_post_comments_body",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((length(btrim((body)::text, ' \t\n\r'::text)) > 0))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_post_comments_lifecycle",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((((status)::text = 'ACTIVE'::text) AND (removed_at IS NULL)) OR (((status)::text = 'REMOVED'::text) AND (removed_at IS NOT NULL))))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_post_comments_root",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((root_id IS NULL) OR (root_id <> id)))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_post_comments_status",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((status)::text = ANY ((ARRAY['ACTIVE'::character varying, 'REMOVED'::character varying])::text[])))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_post_comments_times",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((updated_at >= created_at) AND ((removed_at IS NULL) OR ((removed_at >= created_at) AND (updated_at >= removed_at)))))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_post_comments_version",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((version >= 0))"
+          },
+          {
+            "kind": "f",
+            "name": "fk_post_comments_root_post",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (root_id, post_id) REFERENCES post_comments(id, post_id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "post_comments_author_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "p",
+            "name": "post_comments_pkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "kind": "f",
+            "name": "post_comments_post_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "u",
+            "name": "uq_post_comments_id_post",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "UNIQUE (id, post_id)"
+          }
+        ]
+      },
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "post_likes",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "d",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "post_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "user_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "active",
+            "type": "boolean",
+            "default": "true",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "version",
+            "type": "bigint",
+            "default": "0",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          }
+        ],
+        "indexes": [
+          {
+            "name": "ix_post_likes_active",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_post_likes_active ON public.post_likes USING btree (post_id) WHERE (active = true)"
+          },
+          {
+            "name": "ix_post_likes_user",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_post_likes_user ON public.post_likes USING btree (user_id)"
+          },
+          {
+            "name": "post_likes_pkey",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": true,
+            "definition": "CREATE UNIQUE INDEX post_likes_pkey ON public.post_likes USING btree (id)"
+          },
+          {
+            "name": "uq_post_likes_user",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": false,
+            "definition": "CREATE UNIQUE INDEX uq_post_likes_user ON public.post_likes USING btree (post_id, user_id)"
+          }
+        ],
+        "forceRls": false,
+        "constraints": [
+          {
+            "kind": "c",
+            "name": "ck_post_likes_times",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((updated_at >= created_at))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_post_likes_version",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((version >= 0))"
+          },
+          {
+            "kind": "p",
+            "name": "post_likes_pkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "kind": "f",
+            "name": "post_likes_post_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "post_likes_user_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "u",
+            "name": "uq_post_likes_user",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "UNIQUE (post_id, user_id)"
+          }
+        ]
+      },
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "post_moderation_actions",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "d",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "post_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "actor_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "action",
+            "type": "character varying(16)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "reason",
+            "type": "character varying(1000)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "resulting_version",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          }
+        ],
+        "indexes": [
+          {
+            "name": "ix_post_moderation_actor",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_post_moderation_actor ON public.post_moderation_actions USING btree (actor_id)"
+          },
+          {
+            "name": "ix_post_moderation_post_id",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_post_moderation_post_id ON public.post_moderation_actions USING btree (post_id, id DESC)"
+          },
+          {
+            "name": "post_moderation_actions_pkey",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": true,
+            "definition": "CREATE UNIQUE INDEX post_moderation_actions_pkey ON public.post_moderation_actions USING btree (id)"
+          },
+          {
+            "name": "uq_post_moderation_version",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": false,
+            "definition": "CREATE UNIQUE INDEX uq_post_moderation_version ON public.post_moderation_actions USING btree (post_id, resulting_version)"
+          }
+        ],
+        "forceRls": false,
+        "constraints": [
+          {
+            "kind": "c",
+            "name": "ck_post_moderation_action",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((action)::text = ANY ((ARRAY['HIDE'::character varying, 'RESTORE'::character varying])::text[])))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_post_moderation_reason",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((length(btrim((reason)::text, ' \t\n\r'::text)) > 0))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_post_moderation_version",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((resulting_version >= 0))"
+          },
+          {
+            "kind": "f",
+            "name": "post_moderation_actions_actor_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (actor_id) REFERENCES users(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "p",
+            "name": "post_moderation_actions_pkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "kind": "f",
+            "name": "post_moderation_actions_post_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "u",
+            "name": "uq_post_moderation_version",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "UNIQUE (post_id, resulting_version)"
+          }
+        ]
+      },
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "posts",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "d",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "university_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "created_by",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "publisher",
+            "type": "character varying(16)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "club_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "body",
+            "type": "character varying(10000)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "audience",
+            "type": "character varying(24)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "status",
+            "type": "character varying(16)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "published_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "removed_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "removed_by",
+            "type": "bigint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "removal_reason",
+            "type": "character varying(1000)",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "moderation_hidden",
+            "type": "boolean",
+            "default": "false",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "version",
+            "type": "bigint",
+            "default": "0",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          }
+        ],
+        "indexes": [
+          {
+            "name": "ix_posts_club_feed",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_posts_club_feed ON public.posts USING btree (club_id, published_at DESC, id DESC) WHERE (((status)::text = 'PUBLISHED'::text) AND (moderation_hidden = false))"
+          },
+          {
+            "name": "ix_posts_club_id",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_posts_club_id ON public.posts USING btree (club_id, id) WHERE (club_id IS NOT NULL)"
+          },
+          {
+            "name": "ix_posts_creator_id",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_posts_creator_id ON public.posts USING btree (created_by, id DESC)"
+          },
+          {
+            "name": "ix_posts_feed",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_posts_feed ON public.posts USING btree (university_id, published_at DESC, id DESC) WHERE (((status)::text = 'PUBLISHED'::text) AND (moderation_hidden = false))"
+          },
+          {
+            "name": "ix_posts_removed_by",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_posts_removed_by ON public.posts USING btree (removed_by) WHERE (removed_by IS NOT NULL)"
+          },
+          {
+            "name": "ix_posts_university",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_posts_university ON public.posts USING btree (university_id)"
+          },
+          {
+            "name": "posts_pkey",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": true,
+            "definition": "CREATE UNIQUE INDEX posts_pkey ON public.posts USING btree (id)"
+          }
+        ],
+        "forceRls": false,
+        "constraints": [
+          {
+            "kind": "c",
+            "name": "ck_posts_audience",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((audience)::text = ANY ((ARRAY['UNIVERSITY_STUDENTS'::character varying, 'CLUB_MEMBERS'::character varying])::text[])))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_posts_body",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((length(btrim((body)::text, ' \t\n\r'::text)) > 0))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_posts_lifecycle",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((((status)::text = 'DRAFT'::text) AND (published_at IS NULL) AND (removed_at IS NULL) AND (removed_by IS NULL) AND (removal_reason IS NULL)) OR (((status)::text = 'PUBLISHED'::text) AND (published_at IS NOT NULL) AND (removed_at IS NULL) AND (removed_by IS NULL) AND (removal_reason IS NULL)) OR (((status)::text = 'REMOVED'::text) AND (removed_at IS NOT NULL) AND (removed_by IS NOT NULL) AND (removal_reason IS NOT NULL) AND (length(btrim((removal_reason)::text, ' \t\n\r'::text)) > 0))))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_posts_publisher",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((publisher)::text = ANY ((ARRAY['STUDENT'::character varying, 'CLUB'::character varying])::text[])))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_posts_source",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((((publisher)::text = 'STUDENT'::text) AND (club_id IS NULL) AND ((audience)::text = 'UNIVERSITY_STUDENTS'::text)) OR (((publisher)::text = 'CLUB'::text) AND (club_id IS NOT NULL))))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_posts_status",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((status)::text = ANY ((ARRAY['DRAFT'::character varying, 'PUBLISHED'::character varying, 'REMOVED'::character varying])::text[])))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_posts_times",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((updated_at >= created_at) AND ((published_at IS NULL) OR (published_at >= created_at)) AND ((removed_at IS NULL) OR (removed_at >= created_at)) AND ((published_at IS NULL) OR (updated_at >= published_at)) AND ((removed_at IS NULL) OR (updated_at >= removed_at)) AND ((removed_at IS NULL) OR (published_at IS NULL) OR (removed_at >= published_at))))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_posts_version",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((version >= 0))"
+          },
+          {
+            "kind": "f",
+            "name": "fk_posts_club_university",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (club_id, university_id) REFERENCES clubs(id, university_id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "posts_club_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (club_id) REFERENCES clubs(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "posts_created_by_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "p",
+            "name": "posts_pkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "kind": "f",
+            "name": "posts_removed_by_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (removed_by) REFERENCES users(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "posts_university_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (university_id) REFERENCES universities(id) ON DELETE RESTRICT"
+          }
+        ]
+      },
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "student_profiles",
+        "columns": [
+          {
+            "name": "user_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "university_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "department",
+            "type": "character varying(150)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "study_year",
+            "type": "smallint",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "bio",
+            "type": "character varying(1000)",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "version",
+            "type": "bigint",
+            "default": "0",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          }
+        ],
+        "indexes": [
+          {
+            "name": "ix_student_profiles_university",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_student_profiles_university ON public.student_profiles USING btree (university_id)"
+          },
+          {
+            "name": "student_profiles_pkey",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": true,
+            "definition": "CREATE UNIQUE INDEX student_profiles_pkey ON public.student_profiles USING btree (user_id)"
+          }
+        ],
+        "forceRls": false,
+        "constraints": [
+          {
+            "kind": "c",
+            "name": "ck_student_profiles_department",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((length(btrim((department)::text)) > 0))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_student_profiles_version",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((version >= 0))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_student_profiles_year",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((study_year >= 0) AND (study_year <= 8)))"
+          },
+          {
+            "kind": "f",
+            "name": "fk_student_profiles_university",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (university_id) REFERENCES universities(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "f",
+            "name": "fk_student_profiles_user",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT"
+          },
+          {
+            "kind": "p",
+            "name": "student_profiles_pkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "PRIMARY KEY (user_id)"
+          }
+        ]
+      },
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "universities",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "d",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "code",
+            "type": "character varying(30)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "name",
+            "type": "character varying(200)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "city",
+            "type": "character varying(100)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "country_code",
+            "type": "character varying(2)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "website_url",
+            "type": "character varying(500)",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "active",
+            "type": "boolean",
+            "default": "true",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamp with time zone",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "version",
+            "type": "bigint",
+            "default": "0",
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          }
+        ],
+        "indexes": [
+          {
+            "name": "ix_universities_active_id",
+            "ready": true,
+            "valid": true,
+            "unique": false,
+            "primary": false,
+            "definition": "CREATE INDEX ix_universities_active_id ON public.universities USING btree (active, id)"
+          },
+          {
+            "name": "universities_pkey",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": true,
+            "definition": "CREATE UNIQUE INDEX universities_pkey ON public.universities USING btree (id)"
+          },
+          {
+            "name": "uq_universities_code",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": false,
+            "definition": "CREATE UNIQUE INDEX uq_universities_code ON public.universities USING btree (code)"
+          }
+        ],
+        "forceRls": false,
+        "constraints": [
+          {
+            "kind": "c",
+            "name": "ck_universities_city",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((length(btrim((city)::text)) > 0))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_universities_code",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((code)::text ~ '^[A-Z0-9][A-Z0-9_-]*$'::text))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_universities_country",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((country_code)::text ~ '^[A-Z]{2}$'::text))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_universities_name",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((length(btrim((name)::text)) > 0))"
+          },
+          {
+            "kind": "c",
+            "name": "ck_universities_version",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK ((version >= 0))"
+          },
+          {
+            "kind": "p",
+            "name": "universities_pkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "kind": "u",
+            "name": "uq_universities_code",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "UNIQUE (code)"
+          }
+        ]
+      },
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "user_roles",
+        "columns": [
+          {
+            "name": "user_id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "role",
+            "type": "character varying(20)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          }
+        ],
+        "indexes": [
+          {
+            "name": "pk_user_roles",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": true,
+            "definition": "CREATE UNIQUE INDEX pk_user_roles ON public.user_roles USING btree (user_id, role)"
+          }
+        ],
+        "forceRls": false,
+        "constraints": [
+          {
+            "kind": "c",
+            "name": "ck_user_roles_role",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "CHECK (((role)::text = ANY (ARRAY[('STUDENT'::character varying)::text, ('CLUB_ADMIN'::character varying)::text, ('ADMIN'::character varying)::text])))"
+          },
+          {
+            "kind": "p",
+            "name": "pk_user_roles",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "PRIMARY KEY (user_id, role)"
+          },
+          {
+            "kind": "f",
+            "name": "user_roles_user_id_fkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id)"
+          }
+        ]
+      },
+      {
+        "rls": false,
+        "kind": "r",
+        "name": "users",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "default": null,
+            "notNull": true,
+            "identity": "d",
+            "collation": null,
+            "generated": ""
+          },
+          {
+            "name": "email",
+            "type": "character varying(255)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "name",
+            "type": "character varying(100)",
+            "default": null,
+            "notNull": true,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          },
+          {
+            "name": "password_hash",
+            "type": "character varying(255)",
+            "default": null,
+            "notNull": false,
+            "identity": "",
+            "collation": "pg_catalog.default",
+            "generated": ""
+          }
+        ],
+        "indexes": [
+          {
+            "name": "uk6dotkott2kjsp8vw4d0m25fb7",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": false,
+            "definition": "CREATE UNIQUE INDEX uk6dotkott2kjsp8vw4d0m25fb7 ON public.users USING btree (email)"
+          },
+          {
+            "name": "users_pkey",
+            "ready": true,
+            "valid": true,
+            "unique": true,
+            "primary": true,
+            "definition": "CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id)"
+          }
+        ],
+        "forceRls": false,
+        "constraints": [
+          {
+            "kind": "u",
+            "name": "uk6dotkott2kjsp8vw4d0m25fb7",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "UNIQUE (email)"
+          },
+          {
+            "kind": "p",
+            "name": "users_pkey",
+            "deferred": false,
+            "validated": true,
+            "deferrable": false,
+            "definition": "PRIMARY KEY (id)"
+          }
+        ]
+      }
+    ],
+    "routines": [],
+    "triggers": [],
+    "sequences": [
+      {
+        "max": 9223372036854775807,
+        "min": 1,
+        "name": "club_announcements_id_seq",
+        "type": "bigint",
+        "cache": 1,
+        "cycle": false,
+        "start": 1,
+        "table": "club_announcements",
+        "column": "id",
+        "increment": 1,
+        "dependency": "i"
+      },
+      {
+        "max": 9223372036854775807,
+        "min": 1,
+        "name": "club_comment_likes_id_seq",
+        "type": "bigint",
+        "cache": 1,
+        "cycle": false,
+        "start": 1,
+        "table": "club_comment_likes",
+        "column": "id",
+        "increment": 1,
+        "dependency": "i"
+      },
+      {
+        "max": 9223372036854775807,
+        "min": 1,
+        "name": "club_comment_moderation_actions_id_seq",
+        "type": "bigint",
+        "cache": 1,
+        "cycle": false,
+        "start": 1,
+        "table": "club_comment_moderation_actions",
+        "column": "id",
+        "increment": 1,
+        "dependency": "i"
+      },
+      {
+        "max": 9223372036854775807,
+        "min": 1,
+        "name": "club_comments_id_seq",
+        "type": "bigint",
+        "cache": 1,
+        "cycle": false,
+        "start": 1,
+        "table": "club_comments",
+        "column": "id",
+        "increment": 1,
+        "dependency": "i"
+      },
+      {
+        "max": 9223372036854775807,
+        "min": 1,
+        "name": "club_content_likes_id_seq",
+        "type": "bigint",
+        "cache": 1,
+        "cycle": false,
+        "start": 1,
+        "table": "club_content_likes",
+        "column": "id",
+        "increment": 1,
+        "dependency": "i"
+      },
+      {
+        "max": 9223372036854775807,
+        "min": 1,
+        "name": "club_memberships_id_seq",
+        "type": "bigint",
+        "cache": 1,
+        "cycle": false,
+        "start": 1,
+        "table": "club_memberships",
+        "column": "id",
+        "increment": 1,
+        "dependency": "i"
+      },
+      {
+        "max": 9223372036854775807,
+        "min": 1,
+        "name": "clubs_id_seq",
+        "type": "bigint",
+        "cache": 1,
+        "cycle": false,
+        "start": 1,
+        "table": "clubs",
+        "column": "id",
+        "increment": 1,
+        "dependency": "i"
+      },
+      {
+        "max": 9223372036854775807,
+        "min": 1,
+        "name": "comment_moderation_actions_id_seq",
+        "type": "bigint",
+        "cache": 1,
+        "cycle": false,
+        "start": 1,
+        "table": "comment_moderation_actions",
+        "column": "id",
+        "increment": 1,
+        "dependency": "i"
+      },
+      {
+        "max": 9223372036854775807,
+        "min": 1,
+        "name": "event_participations_id_seq",
+        "type": "bigint",
+        "cache": 1,
+        "cycle": false,
+        "start": 1,
+        "table": "event_participations",
+        "column": "id",
+        "increment": 1,
+        "dependency": "i"
+      },
+      {
+        "max": 9223372036854775807,
+        "min": 1,
+        "name": "events_id_seq",
+        "type": "bigint",
+        "cache": 1,
+        "cycle": false,
+        "start": 1,
+        "table": "events",
+        "column": "id",
+        "increment": 1,
+        "dependency": "i"
+      },
+      {
+        "max": 9223372036854775807,
+        "min": 1,
+        "name": "notifications_id_seq",
+        "type": "bigint",
+        "cache": 1,
+        "cycle": false,
+        "start": 1,
+        "table": "notifications",
+        "column": "id",
+        "increment": 1,
+        "dependency": "i"
+      },
+      {
+        "max": 9223372036854775807,
+        "min": 1,
+        "name": "post_comment_likes_id_seq",
+        "type": "bigint",
+        "cache": 1,
+        "cycle": false,
+        "start": 1,
+        "table": "post_comment_likes",
+        "column": "id",
+        "increment": 1,
+        "dependency": "i"
+      },
+      {
+        "max": 9223372036854775807,
+        "min": 1,
+        "name": "post_comments_id_seq",
+        "type": "bigint",
+        "cache": 1,
+        "cycle": false,
+        "start": 1,
+        "table": "post_comments",
+        "column": "id",
+        "increment": 1,
+        "dependency": "i"
+      },
+      {
+        "max": 9223372036854775807,
+        "min": 1,
+        "name": "post_likes_id_seq",
+        "type": "bigint",
+        "cache": 1,
+        "cycle": false,
+        "start": 1,
+        "table": "post_likes",
+        "column": "id",
+        "increment": 1,
+        "dependency": "i"
+      },
+      {
+        "max": 9223372036854775807,
+        "min": 1,
+        "name": "post_moderation_actions_id_seq",
+        "type": "bigint",
+        "cache": 1,
+        "cycle": false,
+        "start": 1,
+        "table": "post_moderation_actions",
+        "column": "id",
+        "increment": 1,
+        "dependency": "i"
+      },
+      {
+        "max": 9223372036854775807,
+        "min": 1,
+        "name": "posts_id_seq",
+        "type": "bigint",
+        "cache": 1,
+        "cycle": false,
+        "start": 1,
+        "table": "posts",
+        "column": "id",
+        "increment": 1,
+        "dependency": "i"
+      },
+      {
+        "max": 9223372036854775807,
+        "min": 1,
+        "name": "universities_id_seq",
+        "type": "bigint",
+        "cache": 1,
+        "cycle": false,
+        "start": 1,
+        "table": "universities",
+        "column": "id",
+        "increment": 1,
+        "dependency": "i"
+      },
+      {
+        "max": 9223372036854775807,
+        "min": 1,
+        "name": "users_id_seq",
+        "type": "bigint",
+        "cache": 1,
+        "cycle": false,
+        "start": 1,
+        "table": "users",
+        "column": "id",
+        "increment": 1,
+        "dependency": "i"
+      }
+    ],
+    "extensions": [
+      "plpgsql"
+    ],
+    "otherRelations": []
+  },
+  "databaseEnvironment": {
+    "ctype": "en_US.UTF-8",
+    "collate": "en_US.UTF-8",
+    "encoding": "UTF8",
+    "localeProvider": "c"
+  },
+  "migrationChecksums": {
+    "V005__baseline_schema.sql": "4f3f74e097dee54f837adace135a7fd504c5fbf362f7573c3b6fb738fe536fe7",
+    "V006__add_events_and_participations.sql": "046713d9afa9cb508a38b3176b7f2b86808ca4e9a18beb105fc3e6a25f46434c",
+    "V007__add_club_announcements.sql": "8d00500e3a906dbd1be5fe097237edf18c0813208ac02c7e9c2ecfc660d54ae5",
+    "V008__add_notifications.sql": "d552f4293b011363c0083b8139816e4c63b7a5ab705befec1175a0ef6c46acd7",
+    "V009__add_posts_and_moderation.sql": "c29d73d7bc6ee279b7293117f6e6e963a58febd18c22440a0e4c9b4307787be3",
+    "V010__add_post_comments_and_likes.sql": "cf1097be5f3a58a5a1457def062b3f13972b0b55b5e4937b54a69440397789ae",
+    "V011__add_club_content_interactions.sql": "2b64de742ad7425e777a40d32eac32dcb053749dd70ff56cb0a9037fc6181f5d"
+  }
+}

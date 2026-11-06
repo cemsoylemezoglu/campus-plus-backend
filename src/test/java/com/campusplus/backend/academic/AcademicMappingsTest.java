@@ -37,6 +37,8 @@ class AcademicMappingsTest {
                 .addAnnotatedClass(Announcement.class).addAnnotatedClass(Notification.class)
                 .addAnnotatedClass(Post.class).addAnnotatedClass(PostModeration.class)
                 .addAnnotatedClass(PostComment.class).addAnnotatedClass(PostLike.class).addAnnotatedClass(PostCommentLike.class).addAnnotatedClass(CommentModeration.class)
+                .addAnnotatedClass(ClubComment.class).addAnnotatedClass(ClubContentLike.class)
+                .addAnnotatedClass(ClubCommentLike.class).addAnnotatedClass(ClubCommentModeration.class)
                 .buildMetadata().buildSessionFactory();
     }
     @AfterAll
@@ -49,7 +51,8 @@ class AcademicMappingsTest {
         try (var session = factory.openSession()) {
             for (Class<?> type : new Class<?>[]{UniversityRepository.class, UserRepository.class, ClubRepository.class, ClubMembershipRepository.class,
                     EventRepository.class,EventParticipationRepository.class,AnnouncementRepository.class,NotificationRepository.class,
-                    PostRepository.class,PostModerationRepository.class,PostCommentRepository.class,PostLikeRepository.class,PostCommentLikeRepository.class,CommentModerationRepository.class}) {
+                    PostRepository.class,PostModerationRepository.class,PostCommentRepository.class,PostLikeRepository.class,PostCommentLikeRepository.class,CommentModerationRepository.class,
+                    ClubCommentRepository.class,ClubContentLikeRepository.class,ClubCommentLikeRepository.class,ClubCommentModerationRepository.class}) {
                 for (var method : type.getDeclaredMethods()) {
                     Query annotation = method.getAnnotation(Query.class);
                     if (annotation != null && !annotation.nativeQuery()) {
