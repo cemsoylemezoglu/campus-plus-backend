@@ -28,7 +28,7 @@ class ClubInteractionMigrationReviewTest(unittest.TestCase):
         self.assertFalse((REVIEW / name).exists())
         self.assertEqual('2b64de742ad7425e777a40d32eac32dcb053749dd70ff56cb0a9037fc6181f5d', hashlib.sha256(MIGRATION.read_bytes()).hexdigest())
         self.assertEqual('executeInTransaction=true\n', (MANAGED / (name + '.conf')).read_text())
-        self.assertIn('<target>11</target>', (ROOT / 'pom.xml').read_text())
+        self.assertIn('<target>12</target>', (ROOT / 'pom.xml').read_text())
         self.assertIn('<flyway.skip>true</flyway.skip>', (ROOT / 'pom.xml').read_text())
 
     def test_sql_does_not_mutate_existing_rows_or_remove_tables(self):

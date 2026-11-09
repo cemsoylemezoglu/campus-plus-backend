@@ -1,3 +1,39 @@
+> Mesajlaşma V012 ana aşaması (2026-11-09): ayrı açık onayla aynı V012 ve dar
+> runtime grant yalnız campus_plus üzerinde uygulandı. Şema/ACL/Flyway/Hibernate
+> validate ve **116 salt okunur GET başarılı**. Mevcut 20 tablonun tüm değerleri,
+> eski yetkiler ve history prefix korundu; dört yeni tablo boş, identity'ler
+> kullanılmadı. Ana fixture yok, kalıcı JWT/servis ayarları aynı. Test edilen Java
+> kodu değişmedi: **711 Java /48 Python** sonucu geçerli. Yeni modül/commit/push yok.
+> [Ana doğrulama ve sınırlar](messaging-main-validation.md).
+> Aşağıdaki bloklar tarihsel aşama kayıtlarıdır.
+
+> Mesajlaşma V012 test aşaması (2026-11-09): ayrı açık onayla yalnız
+> campus_plus_test üzerinde V012 ve yeni nesnelere dar grant uygulandı.
+> **711 Java (613 izole +98 PG) /48 Python başarılı**, contextLoads ve 14 mesajlaşma
+> PG testi dahil. Sorgu getter/path ve paralel retry stale-version sorunları kodda
+> düzeltildi; SQL aynı. Eski 20 tablonun eski satırları/ACL/history korundu;
+> Flyway/Hibernate/kontrat/tutarlılık/lint başarılı. Ana DB'ye bağlantı veya
+> commit/push yok. Ana V012 ayrıca onay bekliyor; yeni build ana V011 ile açılmamalı.
+> [Tam test raporu ve ana onay planı](messaging-test-validation.md).
+> Aşağıdaki bloklar tarihsel aşama kayıtlarıdır.
+
+> Mesajlaşma kod aşaması (2026-11-09): dört entity/repository, transactional
+> gönderim/idempotency/okundu/engel servisleri, cursor read projection ve API hazır.
+> **612 izole Java /48 Python başarılı**. 14 PG IT derlendi ancak çalıştırılmadı.
+> Kesinti sonrası izole takım tekrar geçti. V012/grant review dizininde, onay yok;
+> yeni kod V012 ister, V011'le başlatılmamalı. DB/servis/commit/push işlemi yok;
+> Maven/CI target11, skip=true ve validate korunuyor. [SQL/onay planı](messaging-phase1-review.md).
+> Aşağıdaki bloklar tarihsel aşama kayıtlarıdır.
+
+> Mesajlaşma güvenlik temeli (2026-11-09): canonical kullanıcı çifti, katılımcıya
+> özel okuma / aynı aktif üniversite ve güncel STUDENT rolüyle yazma politikası,
+> iki yönlü engel kontrolü ve redacted/validated request DTO'ları eklendi.
+> **565 izole Java /44 Python başarılı**, 25 yeni Java testi dahil. Yeni bileşenler
+> mevcut endpoint'lere bağlı değil; entity/SQL/DB bağlantısı veya commit/push yok.
+> Önceki 84 PG testi yeniden çalıştırılmadı. [Tasarım](messaging-architecture.md),
+> [doğrulama ve sıradaki adım](messaging-foundation-validation.md).
+> Aşağıdaki bloklar tarihsel aşama kayıtlarıdır.
+
 > Event/Announcement etkileşim ana aşaması (2026-11-06): ayrı açık onayla aynı V011
 > ve dar grant yalnız campus_plus üzerinde uygulandı. V011 kontrat/Flyway/Hibernate
 > validate ve **90 salt okunur GET** başarılı. Mevcut 16 tablonun değer/ACL/history

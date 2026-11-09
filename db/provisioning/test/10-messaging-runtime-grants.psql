@@ -1,0 +1,25 @@
+-- PREPARED ONLY. Separate approval required; execute only after V012 verification.
+\set ON_ERROR_STOP on
+BEGIN;
+SET LOCAL lock_timeout='5s';
+SET LOCAL statement_timeout='10s';
+DO $$ BEGIN
+ IF current_database()<>'campus_plus_test' OR host(inet_server_addr()) IS DISTINCT FROM '127.0.0.1'
+    OR inet_server_port() IS DISTINCT FROM 5434
+    OR current_setting('server_version_num')::int NOT BETWEEN 170000 AND 179999
+    OR (SELECT pg_get_userbyid(datdba) FROM pg_database WHERE datname=current_database())<>'campus_plus_test_migrator' THEN
+    RAISE EXCEPTION 'Unauthorized test grant target';
+ END IF;
+ IF NOT EXISTS(SELECT FROM public.flyway_schema_history WHERE version IN ('12','012') AND type='SQL' AND success) THEN
+    RAISE EXCEPTION 'Successful V012 required';
+ END IF;
+ IF NOT EXISTS(SELECT FROM pg_roles WHERE rolname='campus_plus_test_runner'
+    AND NOT(rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication OR rolbypassrls))
+    OR EXISTS(SELECT FROM pg_auth_members m JOIN pg_roles r ON r.oid=m.member WHERE r.rolname='campus_plus_test_runner') THEN
+    RAISE EXCEPTION 'Limited test runner required';
+ END IF;
+END $$;
+GRANT SELECT,INSERT,UPDATE ON public.direct_conversations,public.direct_conversation_states,public.user_blocks TO campus_plus_test_runner;
+GRANT SELECT,INSERT ON public.direct_messages TO campus_plus_test_runner;
+GRANT USAGE,SELECT ON SEQUENCE public.direct_conversations_id_seq,public.direct_messages_id_seq,public.direct_conversation_states_id_seq,public.user_blocks_id_seq TO campus_plus_test_runner;
+COMMIT;

@@ -3,6 +3,15 @@
 Campus+, üniversite öğrencilerini, öğrenci kulüplerini ve kampüs yaşamını bir araya
 getiren sosyal platformun Spring Boot tabanlı REST API projesidir.
 
+> Özel mesajlaşmanın **test ve ana V012 geçişi tamamlandı**: **711 Java (613 izole +98 PG)
+> /48 Python başarılı**, contextLoads ve 14 yeni mesajlaşma testi dahil.
+> V012/dar grant test ve ana DB'de ayrı açık onaylarla uygulandı;
+> eski 20 tablonun mevcut kayıtları ve eski yetkileri korundu. Ana ortamda
+> Hibernate/Flyway validate ve **116 salt okunur GET** başarılı; yeni tablolar boş.
+> [Mesajlaşma tasarımı](docs/messaging-architecture.md),
+> [test sonucu](docs/messaging-test-validation.md),
+> [ana doğrulaması](docs/messaging-main-validation.md).
+
 > Event/Announcement yorum, yanıt, beğeni, moderasyon ve bildirim entegrasyonu
 > tamamlandı. **624 Java (540 izole +84 PostgreSQL) /44 Python başarılı**,
 > contextLoads dahil. V011 test ve ana DB'de ayrı açık onaylarla uygulandı.
@@ -11,8 +20,9 @@ getiren sosyal platformun Spring Boot tabanlı REST API projesidir.
 > [Test sonucu](docs/club-interactions-test-validation.md),
 > [ana ortam doğrulaması](docs/club-interactions-main-validation.md).
 
-Ana ve test şeması V011; Hibernate validate korunuyor. Maven/CI migration hedefi 11,
-varsayılan Flyway skip=true. Mevcut ana profillerin üniversiteleri pasif olduğu için
+Test ve ana şema V012. Hibernate validate korunuyor. Maven/CI migration hedefi12,
+varsayılan Flyway skip=true. Her yeni migration uygulaması ayrıca onay gerektirir.
+Mevcut ana profillerin üniversiteleri pasif olduğu için
 normal feed şu an 409 döner; bu kayıtlar değiştirilmedi.
 
 ## Mevcut kapsam
@@ -31,6 +41,8 @@ normal feed şu an 409 döner; bu kayıtlar değiştirilmedi.
   platform moderasyonu ve gizliliğe duyarlı etkileşim bildirimleri.
 - Event/Announcement yorumları ve yanıtları, kaynak/yorum beğenileri, kulübe özel
   moderasyon, kişisel yorum geçmişi ve dinamik erişim kontrollü inbox bağlantıları.
+- Birebir mesajlaşma: katılımcı gizliliği, idempotent metin gönderimi,
+  cursor geçmişi/konuşma kutusu, okunmamış sayısı, monoton okundu ve iki yönlü engel.
 
 CLUB_ADMIN tek başına başka kulüpleri yönetme hakkı vermez. Parola/hash yanıt DTO'larına
 konulmaz. Event/EventParticipation; yayın, kontenjan, kayıt/iptal, check-in, sonlandırma
@@ -67,7 +79,9 @@ IntelliJ ayarları ve değeri ekrana yazdırmadan anahtar oluşturma/kullanma ad
 ortamı ayrıdır; terminal komutu IDE'deki gizli değişkenleri kendiliğinden okumaz.
 Uygulama `.env` dosyasını otomatik yüklemez.
 
-4. Şema mevcut ve uyumluysa uygulamayı IntelliJ'den veya şu komutla başlatın:
+4. Şema mevcut ve uyumluysa uygulamayı IntelliJ'den veya şu komutla başlatın.
+   Yerel ana/test V012 geçişleri onayla doğrulandı; başka ortamda önce ayrı onaylı
+   kurulum gerekir:
 
 ```sh
 ./mvnw spring-boot:run
@@ -98,9 +112,9 @@ sınıflarını temizleyin:
 
 Surefire raporları `target/surefire-reports/` altındadır. Normal `test` veya `verify`,
 `postgres-it` profili açılmadıkça gerçek Spring Boot/JDBC context testini çalıştırmaz.
-Güncel izole test sonucu **540 başarılı**. Son tam koşu 540 izole +84 PostgreSQL
-= **624 Java testi**; 44 Python testi de başarılı.
-[Ayrıntılı sonuç](docs/club-interactions-test-validation.md).
+Güncel izole test sonucu **613 başarılı**. Son tam koşu 613 izole +98 PostgreSQL
+= **711 Java testi**; 48 Python testi de başarılı.
+[Ayrıntılı sonuç](docs/messaging-test-validation.md).
 
 ### PostgreSQL entegrasyon testleri
 
@@ -108,14 +122,14 @@ Güncel izole test sonucu **540 başarılı**. Son tam koşu 540 izole +84 Postg
 ./mvnw -Ppostgres-it verify
 ```
 
-Yerel test DB'sinde V011 ve gerekli grant'ler onayla uygulandı. Başka ortamda
-önce onaylı V011 kurulumu gerekir. Context testi eksik tabloyu görmezden gelmez veya
+Yerel test DB'sinde V012 ve gerekli grant'ler onayla uygulandı. Başka ortamda
+önce onaylı V012 kurulumu gerekir. Context testi eksik tabloyu görmezden gelmez veya
 otomatik oluşturmaz.
 
 Failsafe, korunmuş `contextLoads()` testini `CampusPlusBackendApplicationIT` sınıfında,
 gerçek HTTP/transaction/eşzamanlılık testlerini `PostgresApiIT`, `PostgresEventIT` ve
 `PostgresAnnouncementIT`, `PostgresNotificationIT`, `PostgresPostIT`, `PostgresCommentIT`
-ve `PostgresClubInteractionIT` sınıflarında çalıştırır.
+ve `PostgresClubInteractionIT`, `PostgresMessagingIT` sınıflarında çalıştırır.
 Test atlanmaz: eksik/yanlış ayarda build güvenli biçimde başarısız olur.
 `TEST_DB_*` olmadan ana `DB_*` değişkenlerine geri düşülmez.
 
@@ -125,11 +139,12 @@ Test atlanmaz: eksik/yanlış ayarda build güvenli biçimde başarısız olur.
 | TEST_DB_USERNAME | `campus_plus_test_runner` — sınırlı test hesabı |
 | TEST_DB_PASSWORD | Bu test hesabının süreç ortamındaki gizli parolası |
 
-Yerel test ortamında onayla V005–V011 uygulanmış, sınırlı runner hesabına yeni
+Yerel test ortamında onayla V005–V012 uygulanmış, sınırlı runner hesabına yeni
 etkinlik/duyuru/bildirim/gönderi tabloları için gerekli DML/sequence yetkileri verilmiştir.
 Post moderasyon audit tablosunda yalnız SELECT/INSERT vardır. Yorum/beğeni
 tablolarında da sınırlı DML, yeni audit'te yalnız SELECT/INSERT vardır.
-Başka bir ortamda önce onaylı kurulum ve V011 gerekir.
+Mesajlar append-only SELECT/INSERT; diğer üç mesajlaşma tablosunda sınırlı DML vardır.
+Başka bir ortamda önce onaylı kurulum ve V012 gerekir.
 Farklı port/sunucu,
 `campus_plus`, URL parametreleri ve alternatif JDBC biçimleri reddedilir. Bağlantı
 kurulduğunda sunucunun adresi, portu, DB adı ve PostgreSQL 17 sürümü ayrıca kontrol edilir.
@@ -175,10 +190,11 @@ mevcut olduğu varsayılmaz; onaylı kurulum ve ayrı sır sağlama gerekir.
   Eski dizin değiştirilmedi ve Flyway taramasına alınmadı. Ana DB'ye 2026-10-31 onayla
   yalnız version 5 BASELINE metadata'sı eklendi; iş şeması/verileri korundu.
 - `schema-tools` Maven profilinde Flyway 12.4.0 varsayılan skip durumundadır;
-  otomatik baseline/clean kapalı, hedef sürüm 11'dir. V008 ana ve test DB'de açık onayla
+  otomatik baseline/clean kapalı, hedef sürüm 12'dir. V008 ana ve test DB'de açık onayla
   uygulandı. V009, V010 ve V011 de iki hedefte ayrı onaylarla uygulandı; ana DB
   BASELINE5+SQL6+SQL7+SQL8+SQL9+SQL10+SQL11 durumunda. Ana DB'ye her yeni migrate yalnız
-  ayrı açık onayla çalıştırılır.
+  ayrı açık onayla çalıştırılır. V012 de iki hedefte ayrı açık onaylarla uygulandı.
+  Son test geçmişi SQL5…SQL12, ana geçmişi BASELINE5+SQL6…SQL12.
   Lifecycle execution yoktur.
   Onay olmadan skip kaldırılıp Flyway komutu çalıştırılmaz.
 - Gerçek DB'de migration, yeni DB/rol veya veri değişikliği öncesinde hedef ve SQL gösterilir;
@@ -231,6 +247,11 @@ Commit ve push ayrıca açık kullanıcı talimatıyla yapılır.
 
 ## Dokümantasyon
 
+- [Özel mesajlaşma tasarımı ve uygulama sırası](docs/messaging-architecture.md)
+- [Mesajlaşma kodu ve V012 SQL onay planı](docs/messaging-phase1-review.md)
+- [V012 test sonucu ve ana geçiş onay planı](docs/messaging-test-validation.md)
+- [V012 ana ortam doğrulaması](docs/messaging-main-validation.md)
+- [Mesajlaşma güvenlik temelinin doğrulaması](docs/messaging-foundation-validation.md)
 - [Güncel altyapı planı](docs/setup-test-infrastructure-plan.md)
 - [Altyapı 1. aşama sonucu](docs/setup-test-stage1-review.md)
 - [Altyapı 2. aşama sonucu](docs/setup-test-stage2-review.md)

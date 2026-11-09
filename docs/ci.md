@@ -1,3 +1,10 @@
+> Mesajlaşma test aşaması (2026-11-09): workflow V005→V012, v012 kontrat ve
+> yeni sınırlı test grant'i için güncellendi. Yerelde **711 Java /48 Python** ve
+> actionlint başarılı. Bu V012 değişiklikleri commit/push edilmedi; yeni uzak CI
+> veya yeni boş cluster kurulumu bu oturumda çalıştırılmadı. Yerel test DB'sinde
+> V011→V012 geçişi ayrı açık onayla doğrulandı. [Test raporu](messaging-test-validation.md).
+> Aşağıdaki aşama notları tarihseldir.
+
 > Event/Announcement etkileşim test aşaması (2026-11-06): workflow V005→V011 boş
 > kurulum, V011 kontrat ve dar yeni grant için güncellendi. 624 Java/44 Python ve
 > actionlint yerelde başarılı. Workflow henüz push edilmedi/uzakta çalıştırılmadı;
@@ -68,7 +75,7 @@ kullanılır; sır dosyaları veya test çıktıları cache'e konmaz.
    gizli terminal istemleriyle SCRAM olarak atanır. SQL/komut argümanı literal'i yoktur.
    Workflow masking kayıtları ve GITHUB_ENV üzerinden aynı job'a aktarılır; repo veya
    kalıcı GitHub secret gerekmez. Yerel sır dosyaları okunmaz.
-6. Yalnız test hedefiyle Flyway V005→V011 migrate; V011 şema kontratı ve
+6. Yalnız test hedefiyle Flyway V005→V012 migrate; V012 şema kontratı ve
    managed SQL SHA-256 karşılaştırması; sonra temel/Event/Announcement/Notification/Post/Comment sınırlı runner
    grant'leri ve `-Ppostgres-it verify` çalışır. CI işi testten
    önce her seferinde boş DB kurduğu için kurulum yolunu da doğrular.
